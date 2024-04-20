@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Malwerinator</title>
+</head>
+<body>
+    <ul>
+        {% for key in keys %}
+            <li><a href="/send?name={{key[1]}}&ip={{key[0]}}">{{key[1]}}</a></li>
+        {% endfor %}
+    </ul>
+</body>
+</html>

