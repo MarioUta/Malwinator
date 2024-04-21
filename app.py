@@ -13,7 +13,7 @@ hosts = {}
 def handshake():
   global hosts
   key = (request.remote_addr, request.form['name'])
-  hosts[key] = {'lock' : threading.Lock(), 'command' : '', 'ping' : '', 'log' : ['log']}
+  hosts[key] = {'lock' : threading.Lock(), 'command' : '', 'ping' : '', 'log' : ['']}
   hosts[key]['lock'].acquire()
   return 'Request accepted' 
 
