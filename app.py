@@ -77,13 +77,13 @@ def send_process():
   ip = request.args.get('ip')
   key = (ip, name)
   command = request.form['command'] 
-  if command == 'log':
-    return render_template('log.html', name = name, ip = ip)
   hosts[key]['command'] = command
   if hosts[key]['lock'].locked():
     hosts[key]['lock'].release()
   else:
     return 'Host offline'
+  if command == 'log':
+    return render_template('log.html', name = name, ip = ip)
   return render_template('form.html', name = name, ip = ip)
 
 @app.route('/getLog', methods = ['POST'])
