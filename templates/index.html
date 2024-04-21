@@ -6,7 +6,7 @@
 <body>
     <ul>
         {% for key in keys %}
-            <li><a href="/send?name={{key[1]}}&ip={{key[0]}}">{{key[1]}}</a></li>
+            <li><a href="/send?name={{key[1]}}&ip={{key[0]}}">{{key[1]}} - {{key[2]}}</a></li>
         {% endfor %}
     </ul>
 </body>
