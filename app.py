@@ -84,8 +84,7 @@ def send_process():
     hosts[key]['lock'].release()
   else:
     return 'Host offline'
-  time.sleep(2)
-  return render_template('form.html', name = name, ip = ip, status = hosts[key]['ping'])
+  return render_template('form.html', name = name, ip = ip)
 
 @app.route('/getLog', methods = ['POST'])
 def getLog():
