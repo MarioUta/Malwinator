@@ -7,7 +7,7 @@ app = Flask(__name__)
 
 ''' The hosts dictonary form
   hosts [(ip, host_name)] = {
-    'status': 0/1
+    'status': Up/Down
     'command': string
     'log': string[]
   }
@@ -19,7 +19,7 @@ hosts = {}
 def handshake():
   global hosts
   key = (request.remote_addr, request.form['name'])
-  hosts[key] = {'lock' : threading.Lock(), 'command' : '', 'status' : '0', 'log' : ['']}
+  hosts[key] = {'lock' : threading.Lock(), 'command' : '', 'status' : 'Down', 'log' : ['']}
   hosts[key]['lock'].acquire()
   return 'Request accepted', 200
 
@@ -52,7 +52,7 @@ def pong():
   # this is where hosts can send their ping responses 
   # after a response the host status will be set
   key = (request.remote_addr, request.form['name'])
-  hosts[key]['status'] = '1'
+  hosts[key]['status'] = 'Up'
 
   return 'Pong sent.', 200
 
@@ -73,7 +73,7 @@ def displayHosts():
   for host in hosts:
     # ping the hosts to see who's up
     hosts[host]['command'] = 'ping'
-    hosts[host]['status'] = '0'
+    hosts[host]['status'] = 'Down'
 
     # sending the ping command
     if hosts[host]['lock'].locked():
