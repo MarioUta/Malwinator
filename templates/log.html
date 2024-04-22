@@ -1,34 +1,22 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Malwerinator</title>
-    <script>
-
-      function fetchLog(){
-        const paragraph = document.getElementById('par');
-        const formData = new FormData();
-        formData.append("ip", "{{ip}}");
-        formData.append("name", "{{name}}");
-
-        fetch("http://localhost:5000/getLog", {
-          method: "POST",
-          body: formData
-        })
-        .then(response => {
-          return response.text();
-        })
-        .then(text => {
-          paragraph.textContent = text;
-        })
-        .catch(error => {
-          console.error('Error', error);
-        })
-      }
-
-      setInterval(fetchLog, 500);
-    </script>
+    <title>Malwinator</title>
+    <link rel="stylesheet" href="{{url_for('static', filename='css/styles.css')}}">
+    <script src="{{url_for('static', filename='js/log.js')}}" defer></script>
+    
 </head>
 <body>
-  <p id = "par"></p>
+  <h1>{{message}}</h1>
+  <h3 id="commandResult"></h3>
+  <p id = "log-data"></p>
+  <a class="btn" onclick="sendCommand('log')">Start Log</a>
+  <a class="btn" onclick="sendCommand('end-log')">Stop Log</a>
+  <a class="btn" href="/toolkit?name={{name}}&ip={{ip}}">Go back</a>
+
+  <script>
+    ip = "{{ip}}"
+    name = "{{name}}"
+  </script>
 </body>
 </html>
