@@ -1,5 +1,6 @@
-uri = "http://localhost:8088"
+// uri = "http://localhost:8088"
 // uri = "https://malwinator.chickenkiller.com"
+uri = "http://malwinator.chickenkiller.com"
 function fetchLog() {
     path = "/getLog"
     const paragraph = document.getElementById('log-data');
@@ -55,4 +56,4 @@ function sendCommand(command) {
         })
 }
 
-setInterval(fetchLog, 500);
+setInterval(fetchLog, 1000);

