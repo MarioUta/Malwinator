@@ -1,6 +1,6 @@
-// uri = "http://localhost:8088"
-// uri = "https://malwinator.chickenkiller.com"
-uri = "http://malwinator.chickenkiller.com"
+// uri = "http://localhost:5000"
+uri = "https://malwinator.chickenkiller.com"
+// uri = "http://malwinator.chickenkiller.com"
 function fetchLog() {
     path = "/getLog"
     const paragraph = document.getElementById('log-data');
@@ -30,7 +30,7 @@ function sendCommand(command) {
     
     formData.append("ip", ip);
     formData.append("name", name);
-    formData.append("command", command)
+    formData.append("command", command);
 
     fetch(uri + path, {
         method: "POST",
