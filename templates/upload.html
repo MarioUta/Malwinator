@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Malwinator</title>
+    <meta charset="US-ASCII">
+    <link rel="stylesheet" href="{{url_for('static', filename='css/styles.css')}}">
+    <script src="{{url_for('static', filename='js/upload.js')}}" defer></script>
+    <script src="{{url_for('static', filename='js/command.js')}}" defer></script>
+
+    
+</head>
+<body>
+  <h1>{{message}}</h1>
+  <fieldset>
+    {%for file in files%}
+    <label><input type="radio" id="{{file}}" name="file_input" value="{{file}}">{{file}}</label>
+    {%endfor%}
+  </fieldset>
+  <label>Upload path:</label>
+  <input type="text" id="path" name="path_input">
+  <h3 id="uploadResult"></h3>
+  <p id = "command-result"></p>
+  <a class="btn" onclick="uploadFile()">Upload File</a>
+  <a class="btn" href="/toolkit?name={{name}}&ip={{ip}}">Go back</a>
+  <script>
+    ip = "{{ip}}"
+    name = "{{name}}"
+  </script>
+</body>
+</html>
