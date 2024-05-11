@@ -1,0 +1,29 @@
+
+const slideshowImage = document.getElementById("slideshow-image");
+
+// Function to update the slideshow with a new image
+function updateSlideshow(fileName) {
+    const imageUrl = 'images/' + fileName;
+
+    // Update the src attribute of the existing image
+    slideshowImage.src = imageUrl;
+}
+
+// Create WebSocket connection
+const socket = new WebSocket('ws://localhost:3000');
+
+// Connection opened
+socket.addEventListener('open', function (event) {
+    console.log('Connected to server');
+});
+
+// Listen for messages
+socket.addEventListener('message', function (event) {
+    console.log('Received message:', event.data);
+    updateSlideshow(event.data);
+});
+
+// Handle errors
+socket.addEventListener('error', function (event) {
+    console.error('WebSocket error:', event);
+});
