@@ -1,9 +1,12 @@
-
 const slideshowImage = document.getElementById("slideshow-image");
 
 // Function to update the slideshow with a new image
-function updateSlideshow(fileName) {
-    const imageUrl = 'images/' + fileName;
+function updateSlideshow(imageData) {
+    // Convert the received byte data to a blob
+    const blob = new Blob([imageData], { type: 'image/jpeg' });
+
+    // Create a URL for the blob
+    const imageUrl = URL.createObjectURL(blob);
 
     // Update the src attribute of the existing image
     slideshowImage.src = imageUrl;
