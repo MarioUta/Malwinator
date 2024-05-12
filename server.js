@@ -1,7 +1,6 @@
 const WebSocket = require('ws');
-const fs = require('fs');
 const http = require('http');
-let filePath = '';
+
 // Create a server
 const server = http.createServer((req, res) => {
     if (req.method === 'POST' && req.url === '/upload') {
@@ -25,34 +24,16 @@ const server = http.createServer((req, res) => {
             // Slice the buffer to extract the JPEG data starting from the marker
             const jpegData = body.slice(startIndex);
 
-            // Save the JPEG data to a file
-            fs.unlink(filePath, (err) => {
-                if (err) {
-                    console.error(err);
-                }
-            })
-            const fileName = `frame_${Date.now()}.jpg`;
-            filePath = `./images/${fileName}`;
-            fs.writeFile(filePath, jpegData, (err) => {
-                if (err) {
-                    console.error(err);
-                    res.statusCode = 500;
-                    res.end('Error saving frame');
-                } else {
-                    //console.log('Frame saved successfully');
-                    res.statusCode = 200;
-                    //res.end('Frame received and saved');
-
-                    // Send the file name to the client via WebSocket
-                    wss.clients.forEach(function each(client) {
-                        if (client.readyState === WebSocket.OPEN) {
-                            client.send(fileName);
-                        }
-                    });
+            // Send the JPEG data to clients via WebSocket
+            wss.clients.forEach(function each(client) {
+                if (client.readyState === WebSocket.OPEN) {
+                    client.send(jpegData);
                 }
             });
 
-            
+            // Respond to the POST request
+            res.statusCode = 200;
+            res.end('Frame received and sent');
         });
     } else {
         // Handle other requests or methods
