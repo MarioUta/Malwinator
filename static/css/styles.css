@@ -9,6 +9,11 @@ body {
     font-family: Arial, sans-serif;
 }
 
+pre {
+  white-space: pre-wrap;
+  margin: 20px;
+}
+
 /* Style the form and buttons */
 form {
     display: flex;
@@ -41,7 +46,7 @@ form {
     background-color: #f4f4f4;
     margin: 20px;
     padding: 30px;
-    width: 50%;
+    width: 75%;
 }
 
 .title {
@@ -96,6 +101,11 @@ form {
 
 .form-group {
     margin-bottom: 20px;
+    width: 75%;
+    display: flex;
+    justify-content: center; /* Horizontally center */
+    align-items: center; /* Vertically center */
+    flex-direction: column;
 }
 
 .form-label {
@@ -117,3 +127,63 @@ form {
     background-color: #d6d6d6;
     padding: 5px;
 }
+
+h1 {
+    text-align: center;
+    color: #333;
+  }
+  
+  .file-fieldset {
+    margin-bottom: 20px;
+  }
+  
+  .file-label {
+    display: block;
+    margin-bottom: 10px;
+  }
+  
+  .file-input {
+    margin-right: 5px;
+  }
+  
+  .upload-path-label {
+    display: block;
+    margin-bottom: 10px;
+  }
+  
+  .upload-path-input {
+    width: 100%;
+    padding: 8px;
+    margin-bottom: 20px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+  }
+  
+  .module-select {
+    width: 100%;
+    padding: 8px;
+    margin-bottom: 20px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+  }
+  
+  .upload-result {
+    text-align: center;
+    margin-bottom: 20px;
+  }
+  
+  .command-result {
+    margin-bottom: 20px;
+  }
+  
+  .btn-upload {
+    margin-right: 10px;
+  }
+  
+  .btn-go-back {
+    background-color: #6c757d;
+  }
+  
+  .btn-go-back:hover {
+    background-color: #5a6268;
+  }

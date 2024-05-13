@@ -10,10 +10,10 @@
 <body>
   <h1>{{message}}</h1>
   <h3 id="commandResult"></h3>
-  <p id = "log-data"></p>
+  <pre id = "log-data"></pre>
   <a class="btn" onclick="sendCommand('log')">Start Log</a>
   <a class="btn" onclick="sendCommand('end log')">Stop Log</a>
-  <a class="btn" href="/toolkit?name={{name}}&ip={{ip}}">Go back</a>
+  <a class="btn btn-go-back" href="/toolkit?name={{name}}&ip={{ip}}">Go back</a>
 
   <script>
     ip = "{{ip}}"

