@@ -29,11 +29,6 @@ def send_command(name, ip, command):
   
   return 1
 
-def check_login():
-  # key = 
-  pass
-  
-
 # interface routes
 @app.route('/')
 def displayHosts():
