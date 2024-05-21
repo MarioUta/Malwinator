@@ -236,13 +236,13 @@ def view_camera():
 
 
 # https server
-# if __name__ == '__main__':
-#   socketio.run(ssl_context=('/etc/letsencrypt/live/malwinator.chickenkiller.com/fullchain.pem', '/etc/letsencrypt/live/malwinator.chickenkiller.com/privkey.pem'), debug=False, host='0.0.0.0', port='8082')
+if __name__ == '__main__':
+  socketio.run(app, ssl_context=('/etc/letsencrypt/live/malwinator.chickenkiller.com/fullchain.pem', '/etc/letsencrypt/live/malwinator.chickenkiller.com/privkey.pem'), debug=False, host='0.0.0.0', port='8082')
 
 # http server
 # if __name__ == "__main__":
 #   socketio.run(app, host='0.0.0.0', port='5000')
 
 # # localhost server
-if __name__ == "__main__":
-  socketio.run(host='127.0.0.1', port='8088')
+# if __name__ == "__main__":
+#   socketio.run(host='127.0.0.1', port='8088')
