@@ -6,6 +6,10 @@ import socket
 
 
 app = Flask(__name__)
+UPLOAD_FOLDER = 'downloads'
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+if not os.path.exists(UPLOAD_FOLDER):
+    os.makedirs(UPLOAD_FOLDER)
 socketio = SocketIO(app)
 
 ''' The hosts dictonary form
@@ -191,28 +195,45 @@ def getLog():
   return "Method not allowed", 403
 
 # the download route for the download command
-@app.route('/download', methods = ['POST'])
+@app.route('/download', methods = ['POST', 'GET'])
 def download():
-  file = request.form['file']
-  path = './resources/' + file
-  if os.path.exists(path):
-    return send_file(path, as_attachment = True)
-  else:
-    return 'File not found', 404
+  if request.method == 'GET':
+    # if request.cookies.get('superSecretKey') != 'c457r4v371':
+      # return render_template('notLoggedIn.html')
+    name = request.args.get('name')
+    ip = request.args.get('ip')
+    return render_template('download.html', name = name, ip = ip)
+  elif request.method == 'POST':
+    file = request.form['file']
+    path = './resources/' + file
+    if os.path.exists(path):
+      return send_file(path, as_attachment = True)
+    else:
+      return 'File not found', 404
 
 # route to the file uploading interface
-@app.route('/upload', methods = ['GET'])
+@app.route('/upload', methods = ['GET', 'POST'])
 def upload():
-  if request.cookies.get('superSecretKey') != 'c457r4v371':
-    return render_template('notLoggedIn.html')
-  global hosts
-  name = request.args.get('name')
-  ip = request.args.get('ip')
+  if request.method == 'GET':
+    if request.cookies.get('superSecretKey') != 'c457r4v371':
+      return render_template('notLoggedIn.html')
+    global hosts
+    name = request.args.get('name')
+    ip = request.args.get('ip')
 
-  #get the files available for upload
-  file_list = os.listdir("./resources")
+    #get the files available for upload
+    file_list = os.listdir("./resources")
 
-  return render_template('upload.html', name = name, ip = ip, files = file_list)
+    return render_template('upload.html', name = name, ip = ip, files = file_list)
+  elif request.method == 'POST':
+    if 'file' not in request.files:
+        return 'No file part'
+    file = request.files['file']
+    if file.filename == '':
+        return 'No selected file'
+    if file:
+        file.save(os.path.join(app.config['UPLOAD_FOLDER'], file.filename))
+        return 'File successfully uploaded'
 
 # this is for the web sockets designed for camera access
 @socketio.on('connect')
