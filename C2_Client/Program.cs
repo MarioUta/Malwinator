@@ -183,7 +183,7 @@ namespace C2
                     break;
 
                 case "upload":
-                    string filePath = args[1].Trim('\"');
+                    string filePath = string.Join(" ", args.Skip(1)).Trim('\"');
                     string uploadStatus = string.Empty;
 
                     if (File.Exists(filePath))
