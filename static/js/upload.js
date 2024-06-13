@@ -2,6 +2,8 @@
 uri = "https://malwinator.chickenkiller.com"
 // uri = "http://malwinator.chickenkiller.com"
 
+setInterval(function() {fetchResult('upload');}, 1000);
+
 function uploadFile(){
   var fileInput = document.querySelector('input[name="file_input"]:checked');
   var module = document.getElementById("module").value;
