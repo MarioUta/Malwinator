@@ -1,4 +1,4 @@
-### [Testing] (https://github.com/MarioUta/Malwerinator-educational-/tree/main/Testing "Check the scripts")
+### [Testing](https://github.com/MarioUta/Malwerinator-educational-/tree/main/Testing "Check the scripts")
 
 The testing process focused on the upload feature of the malware.  
       
@@ -9,7 +9,7 @@ files arrive at the given destination.
 
    
       
-### [Camera] (https://github.com/MarioUta/Malwerinator-educational-/tree/main/Camera "Check the camera code")
+### [Camera](https://github.com/MarioUta/Malwerinator-educational-/tree/main/Camera "Check the camera code")
 
   
 The camera sender module sends camera frames in rapid succession as byte streams, which are then rendered in browser as images, changing source with each new frame sent.
