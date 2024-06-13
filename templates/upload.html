@@ -6,7 +6,6 @@
     <link rel="stylesheet" href="{{url_for('static', filename='css/styles.css')}}">
     <script src="{{url_for('static', filename='js/upload.js')}}" defer></script>
     <script src="{{url_for('static', filename='js/command.js')}}" defer></script>
-
     
 </head>
 <body>
@@ -15,6 +14,13 @@
 
     <p>Note: if you have a module already installed on the remote computer and you just want to add/update the 
       path to it just put the new path (to the module's file on the machine not just the directory) and select the module without checking a file to be uploaded.</p>
+
+    <form class="form-left" action="/upload_file" method="POST" enctype="multipart/form-data">
+      <label for="file" class="upload-path-label">Choose file to upload to the server:</label>
+      <input type="file" id="file" name="file" class="upload-path-input">
+      <input type="hidden" id="currentUrl" name="currentUrl">
+      <button type="submit" class="btn">Upload File</button>
+    </form>
 
     <label class="upload-path-label">Files available:</label>
 
@@ -27,7 +33,7 @@
       {% endfor %}
     </fieldset>
     
-    <label class="upload-path-label">Upload path:</label>
+    <label class="upload-path-label">Upload path on the victim:</label>
     <input type="text" id="path" name="path_input" class="upload-path-input">
     
     <label class="upload-path-label">Module:</label>
@@ -45,6 +51,7 @@
   <script>
     ip = "{{ip}}"
     name = "{{name}}"
+    document.getElementById('currentUrl').value = window.location.href;
   </script>
 </body>
 </html>
