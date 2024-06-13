@@ -1,4 +1,4 @@
-from flask import Flask, request, send_file, render_template
+from flask import Flask, request, send_file, render_template, redirect
 import os, time
 import threading
 from flask_socketio import SocketIO
@@ -239,6 +239,19 @@ def upload():
         file.save(os.path.join(app.config['UPLOAD_FOLDER'], file.filename))
         return 'File successfully uploaded'
 
+@app.route('/upload_file', methods = ['POST'])
+def upload_file():
+  return_url = request.form['currentUrl']
+  if 'file' not in request.files:
+    return redirect(return_url)
+  file = request.files['file']
+  if file.filename == '':
+    return redirect(return_url)
+  if file:
+    filepath = os.path.join('./resources', file.filename)
+    file.save(filepath)
+    return redirect(return_url)
+
 # this is for the web sockets designed for camera access
 @socketio.on('connect')
 def handle_connect():
@@ -261,12 +274,12 @@ def view_camera():
 
 
 # https server
-if __name__ == '__main__':
-  socketio.run(app, ssl_context=('/etc/letsencrypt/live/malwinator.chickenkiller.com/fullchain.pem', '/etc/letsencrypt/live/malwinator.chickenkiller.com/privkey.pem'), debug=False, host='0.0.0.0', port='8082')
+# if __name__ == '__main__':
+  # socketio.run(app, ssl_context=('/etc/letsencrypt/live/malwinator.chickenkiller.com/fullchain.pem', '/etc/letsencrypt/live/malwinator.chickenkiller.com/privkey.pem'), debug=False, host='0.0.0.0', port='8082')
 
 # http server
-# if __name__ == "__main__":
-#   socketio.run(app, host='0.0.0.0', port='5000')
+if __name__ == "__main__":
+  socketio.run(app, host='0.0.0.0', port='8081')
 
 # # localhost server
 # if __name__ == "__main__":

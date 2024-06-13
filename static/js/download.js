@@ -1,6 +1,6 @@
 // uri = "http://localhost:5000"
-uri = "https://malwinator.chickenkiller.com"
-// uri = "http://malwinator.chickenkiller.com"
+// uri = "https://malwinator.chickenkiller.com"
+uri = "http://malwinator.chickenkiller.com"
 
 setInterval(function() {fetchResult('download');}, 1000);
 

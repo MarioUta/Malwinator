@@ -1,6 +1,6 @@
-uri = "http://localhost:5000"
+// uri = "http://localhost:5000"
 // uri = "https://malwinator.chickenkiller.com"
-// uri = "http://malwinator.chickenkiller.com"
+uri = "http://malwinator.chickenkiller.com"
 function fetchResult(param) {
     path = "/getResult?id="+param;
     console.log(path);
