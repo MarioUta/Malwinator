@@ -9,6 +9,9 @@ The aim of the Implant is to hide the virus in plain sight so that, even if the 
 
 ## Usage: 
 
+#### Requirements
+
+The executable from C2_Client has to be compiled and present on the /resources folder on the C2_Sever for the script to work.
 
 ### 1)Install module ps2exe
 Warning: Start PowerShell as administrator
