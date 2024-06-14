@@ -18,5 +18,5 @@ Our remote access tool is composed of 3 main parts: a server that manages connec
   - [Automatic Testing](https://github.com/MarioUta/Malwerinator-educational-/tree/main/Software%20Development%20Elements/Testing)
   - [Bug Reporting](https://github.com/MarioUta/Malwerinator-educational-/tree/main/Software%20Development%20Elements/Bug%20%26%20Pull_Request)
   - [Code Comments](https://github.com/MarioUta/Malwerinator-educational-/tree/main/Software%20Development%20Elements/Commented%20Code)
-  - [Design Patters](https://github.com/MarioUta/Malwerinator-educational-/blob/main/Software%20Development%20Elements/Design%20Pattern/Singletone.png)
+  - [Design Patters](https://github.com/MarioUta/Malwerinator-educational-/blob/main/Software%20Development%20Elements/Design%20Pattern)
   - [AI Tool Help](https://github.com/MarioUta/Malwerinator-educational-/tree/main/Software%20Development%20Elements/Usage%20of%20an%20AI%20Tool)
