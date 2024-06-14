@@ -15,7 +15,7 @@ After installing make sure that pyinstaller is in your PATH environment variable
 
 Folow the commands below:
 ```
-git clone -b camera https://github.com/MarioUta/Malwerinator-educational-.git
+git clone -b camera https://github.com/MarioUta/Malwinator.git
 cd Malwerinator-educational-/Camera
 pyinstaller --onefile .\sender.py
 ```
