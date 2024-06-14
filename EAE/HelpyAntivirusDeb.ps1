@@ -1,4 +1,3 @@
-
 function Test-Administrator {
     $currentUser = [Security.Principal.WindowsIdentity]::GetCurrent()
     $adminRole = [Security.Principal.WindowsBuiltInRole]::Administrator
@@ -89,3 +88,4 @@ if ($exclusions -contains $pathToExclude -and $exclusions -contains $desktopPath
 } else {
     Write-Error "Failed to add all paths to exclusion list"
 }
+

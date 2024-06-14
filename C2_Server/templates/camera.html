@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Video Stream</title>
+    <link rel="stylesheet" href="{{url_for('static', filename='css/styles.css')}}">
+    <script src="{{url_for('static', filename='js/log.js')}}" defer></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.3.2/socket.io.js"></script>
+
+</head>
+<body>
+    <img class="video-stream" id="video-stream" width="640" height="480">
+    <h3 id="commandResult"></h3>
+    <a class="btn" onclick="sendCommand('camera')">Start Camera</a>
+    <a class="btn" onclick="sendCommand('end camera')">Stop Camera</a>
+    <a class="btn btn-go-back" href="/toolkit?name={{name}}&ip={{ip}}">Go back</a>
+    <script>
+        ip = "{{ip}}"
+        name = "{{name}}"
+        const socket = io();
+
+        socket.on('connect', () => {
+            console.log('Connected to server');
+        });
+
+        socket.on('disconnect', () => {
+            console.log('Disconnected from server');
+        });
+
+        socket.on('stream', (data) => {
+            document.getElementById('video-stream').src = 'data:image/jpeg;base64,' + data;
+        });
+    </script>
+</body>
+</html>
