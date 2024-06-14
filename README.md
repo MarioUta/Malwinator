@@ -2,7 +2,8 @@
 
 Our remote access tool is composed of 3 main parts: a server that manages connections to infected hosts and enables the threat actor to perform various actions on the host, a client app that runs permanently on the infected host and recieves command from the server and an implant that is used to place the client on the host.
 
-[Live demo](https://youtube.com)
+[Live demo](https://youtu.be/dQw4w9WgXcQ?si=RgaVfuDe5cb_QNFx)
+[Rick Roll!](https://youtube.com)
 
 ## Table of Contents
 - Implementation
