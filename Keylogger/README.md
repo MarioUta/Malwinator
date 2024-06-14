@@ -11,7 +11,7 @@ For this to work I suppose that dotnet is already installed on the system.
 Folow the commands below:
 
 ```
-git clone -b keylogger https://github.com/MarioUta/Malwerinator-educational-.git
+git clone -b keylogger https://github.com/MarioUta/Malwinator.git
 cd Malwerinator-educational-/Keylogger
 dotnet publish -c Release
 ```
