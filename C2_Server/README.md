@@ -13,7 +13,7 @@ pip install flask_socketio
 ```
 #### Building and running
 ```
-git clone -b c2 https://github.com/MarioUta/Malwerinator-educational-.git
+git clone -b c2 https://github.com/MarioUta/Malwinator.git
 cd Malwerinator-educational-/C2_Server
 flask run
 ```
