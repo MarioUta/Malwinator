@@ -17,7 +17,7 @@ For this to work I suppose that dotnet is already installed on the system.
 Folow the commands below:
 
 ```
-git clone -b c2_client https://github.com/MarioUta/Malwerinator-educational-.git
+git clone -b c2_client https://github.com/MarioUta/Malwinator.git
 cd Malwerinator-educational-/C2_Client
 dotnet publish -c Release
 ```
