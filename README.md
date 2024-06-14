@@ -6,11 +6,11 @@ Our remote access tool is composed of 3 main parts: a server that manages connec
 
 ## Table of Contents
 - Implementation
-  - [C2 Server](https://github.com/MarioUta/Malwerinator-educational-/tree/Update/-adding-readmes/C2_Server)
+  - [C2 Server](https://github.com/MarioUta/Malwerinator-educational-/tree/main/C2_Server)
   - [C2 Client](#c2-client)
-  - [Keylogger](https://github.com/MarioUta/Malwerinator-educational-/tree/Update/-adding-readmes/Keylogger)
-  - [Camera](https://github.com/MarioUta/Malwerinator-educational-/tree/Update/-adding-readmes/Camera)
-  - [Implant](https://github.com/MarioUta/Malwerinator-educational-/blob/Update/-adding-readmes/EAE/README.md)
+  - [Keylogger](https://github.com/MarioUta/Malwerinator-educational-/tree/main/Keylogger)
+  - [Camera](https://github.com/MarioUta/Malwerinator-educational-/tree/main/Camera)
+  - [Implant](https://github.com/MarioUta/Malwerinator-educational-/blob/main/EAE)
 - Software Development
   - [User Stories](https://vladsteopoaie.atlassian.net/jira/software/projects/EIO/boards/2)
   - [UML Diagrams](https://github.com/MarioUta/Malwerinator-educational-/tree/main/Software%20Development%20Elements/UML%20Diagrams)
