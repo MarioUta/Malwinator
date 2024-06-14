@@ -1,21 +1,12 @@
 # Testing:
-Powershell in executabil pentru a downloada si executa un cod raw de pe server: fail
-Crearea unui payload folosind msfvenom(reverse-shell) si obfuscarea folosind ScareCrow: Bitdefender recunoaste, Windows Defender nu, aplicatia nu ruleaza
-Powershell care adauga o cale la exclusion path: Succes!(TREBUIE RUN AS ADMIN)#
-# Planuri:
 
-Creeaza executabil care:
- a) Adauga drive-ul C: in exclusion path(succes)
- b) Porneste un proces adevarat(succes)
- c) Adauga virusul la startup(succes)
- d) Cauta explicit path-ul in care se poate afla virusul(ongoing)
- e) Arata "legit" (ongoing)
- f) Nu este detected de windows(succes)
+After testing, I decided to try and craft a trojan horse that must be run as administrator to work, disguised as an Antivirus app. The Icon should appear legit and when run it should not just open the virus itself, rather create an environment for the virus to wreak havoc
 
-Polish the executable:
- a) Programul sa deschida o aplicatie care se potriveste cu imaginea (ongoing)
- b) Schimba pozitiile liniilor de cod ca sa ascunda ce se intampla in background
-Optional:
- a) Sa nu fie nevoie de run as administrator pentru a functiona
- b) Sa mute executabilul in alta locatie si sa il multiplice(virus-like)
+# Plans:
+ a) Add specific paths, such as Desktop/Download in Windows Defender exclusion paths(success)
+ b) Open up a process(a video for fun :D ), or show a popup, then restart the PC(success)
+ c) Search for the virus path in order to manipulate it(success)
+ d) Add virus to Startup and make executable hidden(success)
+ e) Looks like an App (success)
+
 
