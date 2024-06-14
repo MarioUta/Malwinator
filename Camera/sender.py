@@ -41,6 +41,7 @@ def send_video_to_server():
             # Send JPEG data to the server
             try:
                 sio.emit('stream', jpeg_data)
+                print("Emited Stream")
             except:
                 break
 
