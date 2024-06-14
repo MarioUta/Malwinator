@@ -2,12 +2,12 @@
 
 Our remote access tool is composed of 3 main parts: a server that manages connections to infected hosts and enables the threat actor to perform various actions on the host, a client app that runs permanently on the infected host and recieves command from the server and an implant that is used to place the client on the host.
 
-[Live demo](https://youtu.be/dQw4w9WgXcQ?si=RgaVfuDe5cb_QNFx](https://www.youtube.com/watch?v=QSPNOVHxluA)
+[Live demo](https://www.youtube.com/watch?v=QSPNOVHxluA&ab_channel=MarioU%C8%9B%C4%83)
 
 ## Table of Contents
 - Implementation
   - [C2 Server](https://github.com/MarioUta/Malwerinator-educational-/tree/main/C2_Server)
-  - [C2 Client](#c2-client)
+  - [C2 Client](https://github.com/MarioUta/Malwerinator-educational-/tree/main/C2_Client)
   - [Keylogger](https://github.com/MarioUta/Malwerinator-educational-/tree/main/Keylogger)
   - [Camera](https://github.com/MarioUta/Malwerinator-educational-/tree/main/Camera)
   - [Implant](https://github.com/MarioUta/Malwerinator-educational-/blob/main/EAE)
