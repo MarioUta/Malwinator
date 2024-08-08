@@ -1,5 +1,9 @@
 # Malwinator
 
+## Disclaimer
+This project was built as a university project for fun and educational purposes. It was never intended for malicious use. The malware is not designed to be stealthy and cannot bypass any up-to-date security measures on a Windows machine. Additionally, it may not be as stable as desired, so please use it with caution.
+
+## Summary
 Our remote access tool is composed of 3 main parts: a server that manages connections to infected hosts and enables the threat actor to perform various actions on the host, a client app that runs permanently on the infected host and recieves command from the server and an implant that is used to place the client on the host.
 
 [Live demo](https://www.youtube.com/watch?v=QSPNOVHxluA&ab_channel=MarioU%C8%9B%C4%83)
