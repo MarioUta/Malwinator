@@ -7,7 +7,10 @@ This is a malicious C# script that can handle a connection to the remote server 
 - download (to download a file from the remote server)
 - upload (to upload a file on the remote server)
 - log (to open the keylogger module)
-- cammera (to open the camera module)
+- camera (to open the camera module)
+
+#### Note:
+If you want to change the C2 server address change the url from Program.cs and recompile.
 
 ## Usage
 

